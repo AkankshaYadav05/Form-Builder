@@ -1,5 +1,6 @@
 import express from 'express';
 import Form from '../models/Form.js';
+import Response from "../models/Response.js";
 
 const router = express.Router();
 
@@ -67,6 +68,101 @@ router.post('/', async (req, res) => {
     res.status(201).json({ message: 'Response saved', response });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+
+router.post("/:id/submit", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const submittedAnswers = req.body.answers; // [{ questionId, answer }]
+
+    const form = await Form.findById(id);
+    if (!form) {
+      return res.status(404).json({ error: "Form not found" });
+    }
+
+    let score = 0;
+
+    const answers = form.questions.map((q) => {
+      const userAnsObj = submittedAnswers.find(
+        (a) => a.questionId === q._id.toString()
+      );
+      const userAnswer = userAnsObj ? userAnsObj.answer : "";
+
+      let isCorrect = false;
+
+      switch (q.type) {
+        case "text":
+        case "mcq":
+          isCorrect =
+            userAnswer?.toString().trim().toLowerCase() ===
+            q.correctAnswer?.toString().trim().toLowerCase();
+          break;
+
+        case "cloze":
+          {
+            const expected = Array.isArray(q.correctAnswer)
+              ? q.correctAnswer.map((s) => s?.trim().toLowerCase())
+              : [String(q.correctAnswer ?? "").trim().toLowerCase()];
+
+            const given = Array.isArray(userAnswer)
+              ? userAnswer.map((s) => s?.trim().toLowerCase())
+              : [String(userAnswer ?? "").trim().toLowerCase()];
+
+            isCorrect =
+              expected.length === given.length &&
+              expected.every((exp, i) => exp === given[i]);
+          }
+          break;
+
+        case "categorize":
+          {
+            const expectedMap = q.correctAnswer || {}; // { item: category }
+            isCorrect = Object.keys(expectedMap).every((item) => {
+              const expectedCat = expectedMap[item];
+              const givenCat = userAnswer?.[item];
+              return (
+                givenCat &&
+                givenCat.toString().trim().toLowerCase() ===
+                  expectedCat.toString().trim().toLowerCase()
+              );
+            });
+          }
+          break;
+
+        default:
+          // if unknown type, mark as incorrect
+          isCorrect = false;
+      }
+
+      if (isCorrect) score++;
+
+      return {
+        questionId: q._id,
+        question: q.title,
+        type: q.type,
+        answer: userAnswer,
+        isCorrect,
+      };
+    });
+
+    const percentageScore = Math.round(
+      (score / form.questions.length) * 100
+    );
+
+    const response = new Response({
+      formId: id,
+      answers,
+      score: percentageScore,
+      submittedAt: new Date(),
+    });
+
+    await response.save();
+    res.status(201).json(response);
+  } catch (err) {
+    console.error("Error saving response:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 

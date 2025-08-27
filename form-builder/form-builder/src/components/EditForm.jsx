@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import FormBuilder from "../pages/FormBuilder";
+import FormBuilder from "./FormBuilder";
 
 export default function EditForm() {
   const { id } = useParams();

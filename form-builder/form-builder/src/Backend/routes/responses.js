@@ -1,8 +1,7 @@
 // routes/responses.js
 import express from "express";
 import Response from "../models/Response.js";
-import Form from "../models/Form.js"; 
-import { submitResponse } from "../controllers/submitResponse.js";
+import Form from "../models/Form.js"; // optional for validation
 import mongoose from "mongoose";
 
 const router = express.Router();
@@ -52,7 +51,5 @@ router.get("/forms/:id/responses", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
-router.post("/submit", submitResponse);
 
 export default router;

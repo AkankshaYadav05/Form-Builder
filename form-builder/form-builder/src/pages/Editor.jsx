@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import FormBuilder from './FormBuilder';
+import FormBuilder from '../components/FormBuilder';
 
 export default function Editor() {
   const { formId } = useParams();

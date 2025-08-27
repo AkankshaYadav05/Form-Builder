@@ -1,13 +1,23 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const AnswerSchema = new mongoose.Schema({
-  questionId: String,
-  answer: mongoose.Schema.Types.Mixed // can be string, array, etc.
+const answerSchema = new mongoose.Schema({
+  formId: { type: mongoose.Schema.Types.ObjectId, ref: "Form", required: true },
+  questionId: { type: mongoose.Schema.Types.ObjectId, required: true },     // main Q
+  subQuestionId: { type: mongoose.Schema.Types.ObjectId, required: true },  // subQ
+  question: String,               // subquestion text
+  answer: String,                 // user answer
+  correctAnswer: mongoose.Schema.Types.Mixed,  // for easy display
+  isCorrect: Boolean,
 });
 
-const ResponseSchema = new mongoose.Schema({
-  formId: { type: mongoose.Schema.Types.ObjectId, ref: "Form", required: true },
-  answers: [AnswerSchema]
-}, { timestamps: true });
+const responseSchema = new mongoose.Schema(
+  {
+    formId: { type: mongoose.Schema.Types.ObjectId, ref: "Form", required: true },
+    answers: [answerSchema],
+    score: { type: Number, default: 0 },
+    submittedAt: { type: Date, default: Date.now },
+  },
+  { timestamps: true }
+);
 
-export default mongoose.model("Response", ResponseSchema);
+export default mongoose.model("Response", responseSchema);
