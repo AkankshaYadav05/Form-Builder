@@ -1,6 +1,6 @@
 export default function FileUpload({ question }) {
   return (
-    <div className="border border-dashed rounded-2xl p-4 bg-white mb-4">
+    <div className="shadow-sm rounded-2xl p-4 bg-white mb-4">
       <div className="flex justify-between items-center mb-3">
         <h3 className="font-semibold text-gray-800">File Upload</h3>
         <span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-md">
