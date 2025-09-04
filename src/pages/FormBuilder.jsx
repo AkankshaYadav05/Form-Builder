@@ -1,17 +1,8 @@
 import { useState } from "react";
 import {
   PlusCircle,
-  FileText,
   List,
-  CheckSquare,
-  Star,
-  Type,
-  Upload,
-  Tags,
-  AlignLeft,
-  ChevronDown,
   Save,
-  Eye,
   Trash2,
   ArrowUp,
   ArrowDown,
@@ -20,8 +11,7 @@ import axios from "axios";
 
 // Question Components
 import MCQ from "../components/questions/MCQ";
-import Comprehension from "../components/questions/Comprehension";
-import Cloze from "../components/questions/Cloze";
+import LongAnswer from "../components/questions/LongAnswer";
 import Rating from "../components/questions/Rating";
 import Checkbox from "../components/questions/Checkbox";
 import FileUpload from "../components/questions/FileUpload";
@@ -39,8 +29,7 @@ export default function FormBuilder() {
 
   const QUESTION_TEMPLATES = {
     mcq: { type: "mcq", text: "", options: [""] },
-    comprehension: { type: "comprehension", title: "", passage: "", subQuestions: [] },
-    cloze: { type: "cloze", text: "", blanks: [] },
+    long: { type: "long", text: "" },
     rating: { type: "rating", text: "", scale: 5 },
     checkbox: { type: "checkbox", text: "", options: [""] },
     file: { type: "file", text: "" },
@@ -51,8 +40,7 @@ export default function FormBuilder() {
 
   const COMPONENTS = {
     mcq: MCQ,
-    comprehension: Comprehension,
-    cloze: Cloze,
+    long: LongAnswer,
     rating: Rating,
     checkbox: Checkbox,
     file: FileUpload,
