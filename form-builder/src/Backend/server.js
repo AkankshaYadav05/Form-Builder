@@ -7,9 +7,9 @@ import responseRoutes from "./routes/responses.js";
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:5173',  // your React app origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  // allow DELETE method
-  allowedHeaders: ['Content-Type', 'Authorization'], // other headers if needed
+  origin: 'http://localhost:5173', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  
+  allowedHeaders: ['Content-Type', 'Authorization'], 
 }));
 
 app.use(express.json({ limit: '50mb' })); // Increase JSON body size limit

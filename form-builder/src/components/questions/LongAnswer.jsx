@@ -1,6 +1,6 @@
 import React from 'react';
 
-function ShortAnswer({ question, onChange }) {
+function LongAnswer({ question, onChange }) {
   const updateText = (text) => {
     onChange({ ...question, text });
   };
@@ -17,21 +17,21 @@ function ShortAnswer({ question, onChange }) {
           value={question.text}
           onChange={(e) => updateText(e.target.value)}
           className="text-lg font-medium w-full focus:outline-none border-b border-gray-200 pb-2"
-          placeholder="Enter your short answer question"
+          placeholder="Enter your long answer question"
         />
       </div>
 
       <div className="mt-4">
-        <input
-          type="text"
+        <textarea
           value={question.answer || ""}
           onChange={(e) => updateAnswer(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
-          placeholder="Write your answer here..."
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y bg-gray-50"
+          rows="4"
+          placeholder="Write your long answer here..."
         />
       </div>
     </div>
   );
 }
 
-export default ShortAnswer;
+export default LongAnswer;
