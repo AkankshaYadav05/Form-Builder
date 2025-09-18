@@ -1,12 +1,15 @@
-// src/components/SidebarBtn.jsx
-export default function SidebarBtn({ icon, label, onClick }) {
+import React from 'react';
+
+function SidebarBtn({ icon, label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 w-full px-3 py-2 border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-400 transition text-sm font-medium text-gray-700"
+      className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition duration-200 border border-transparent hover:border-blue-200"
     >
-      <span className="text-indigo-600">{icon}</span>
-      <span>{label}</span>
+      <span className="text-gray-500">{icon}</span>
+      <span className="font-medium">{label}</span>
     </button>
   );
 }
+
+export default SidebarBtn;

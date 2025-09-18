@@ -1,52 +1,64 @@
-import React from "react";
+import React from 'react';
+import { Star } from 'lucide-react';
 
-export default function Rating({ question, onChange }) {
-  const text = question.text || "";
-  const scale = question.scale || 5;
-  const answer = question.answer || null;
-
-  const handleTextChange = (e) => {
-    onChange({ ...question, text: e.target.value });
+function Rating({ question, onChange }) {
+  const updateText = (text) => {
+    onChange({ ...question, text });
   };
 
-  const handleRatingClick = (value) => {
-    onChange({ ...question, answer: value });
+  const updateScale = (scale) => {
+    onChange({ ...question, scale: parseInt(scale), rating: 0 }); // reset rating if scale changes
+  };
+
+  const updateRating = (rating) => {
+    onChange({ ...question, rating });
   };
 
   return (
-    <div className="shadow-sm rounded-2xl p-4 bg-white mb-4">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="font-semibold text-gray-800">Rating</h3>
-        <span className="bg-yellow-50 text-yellow-600 text-xs px-2 py-1 rounded-md">
-          RATING
-        </span>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="mb-4">
+        <input
+          type="text"
+          value={question.text}
+          onChange={(e) => updateText(e.target.value)}
+          className="text-lg font-medium w-full focus:outline-none border-b border-gray-200 pb-2"
+          placeholder="Enter your rating question"
+        />
       </div>
 
-      {/* Question Input */}
-      <input
-        type="text"
-        placeholder="Enter your rating question..."
-        value={text}
-        onChange={handleTextChange}
-        className="w-100 border-b px-3 py-2 mb-3 text-sm focus:outline-none focus:border-purple-500"
-      />
+      <div className="flex items-center gap-4 mb-4">
+        <span className="text-sm text-gray-600">Scale:</span>
+        <select
+          value={question.scale}
+          onChange={(e) => updateScale(e.target.value)}
+          className="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="3">1-3</option>
+          <option value="5">1-5</option>
+          <option value="7">1-7</option>
+          <option value="10">1-10</option>
+        </select>
+      </div>
 
-      {/* Rating Buttons */}
-      <div className="flex gap-2 mt-2">
-        {Array.from({ length: scale }, (_, i) => i + 1).map((value) => (
-          <button
-            key={value}
-            onClick={() => handleRatingClick(value)}
-            className={`w-10 h-10 flex items-center justify-center rounded-full border text-sm font-medium transition ${
-              answer === value
-                ? "bg-blue-500 text-white border-blue-500"
-                : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
-            }`}
-          >
-            {value}
-          </button>
-        ))}
+      <div className="flex gap-2">
+        {Array.from({ length: question.scale }, (_, index) => {
+          const starNumber = index + 1;
+          return (
+            <Star
+              key={index}
+              size={28}
+              onClick={() => updateRating(starNumber)}
+              className={`cursor-pointer transition duration-200 ${
+                starNumber <= (question.rating || 0)
+                  ? "text-yellow-400 fill-yellow-400"
+                  : "text-gray-300"
+              }`}
+            />
+          );
+        })}
       </div>
     </div>
   );
 }
+
+export default Rating;

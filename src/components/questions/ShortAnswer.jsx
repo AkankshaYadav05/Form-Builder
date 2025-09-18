@@ -1,38 +1,37 @@
-export default function ShortAnswer({ question, onChange }) {
-  const answer = question.answer || "";
-  const text = question.text || "";
+import React from 'react';
 
-  const handleTextChange = (e) => {
-    onChange({ ...question, text: e.target.value });
+function ShortAnswer({ question, onChange }) {
+  const updateText = (text) => {
+    onChange({ ...question, text });
   };
 
-  const handleAnswerChange = (e) => {
-    onChange({ ...question, answer: e.target.value });
+  const updateAnswer = (answer) => {
+    onChange({ ...question, answer });
   };
+
   return (
-    <div className="shadow-sm rounded-2xl p-4 bg-white mb-4">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="font-semibold text-gray-800">Short Answer</h3>
-        <span className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-md">
-          SHORT-ANSWER
-        </span>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="mb-4">
+        <input
+          type="text"
+          value={question.text}
+          onChange={(e) => updateText(e.target.value)}
+          className="text-lg font-medium w-full focus:outline-none border-b border-gray-200 pb-2"
+          placeholder="Enter your short answer question"
+        />
       </div>
 
-      {/* Question Input */}
-      <input
-        type="text"
-        placeholder="Enter your question..."
-        value={text}
-        onChange={handleTextChange}
-        className="w-150 border-b px-3 py-2 mb-3 text-sm focus:outline-none focus:border-purple-500"
-      />
-
-      <textarea
-        placeholder="Type your answer here..."
-        value={question.answer || ""}
-        onChange={(e) => onChange({ ...question, answer: e.target.value })}
-        className="w-200 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-      />
+      <div className="mt-4">
+        <input
+          type="text"
+          value={question.answer || ""}
+          onChange={(e) => updateAnswer(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+          placeholder="Write your answer here..."
+        />
+      </div>
     </div>
   );
 }
+
+export default ShortAnswer;
