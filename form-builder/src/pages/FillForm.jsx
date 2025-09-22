@@ -3,8 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { 
   CheckCircle, 
   Clock, 
-  ArrowRight, 
-  ArrowLeft, 
   Send,
   AlertCircle,
   Star,
@@ -32,7 +30,7 @@ function ProgressBar({ current, total }) {
 }
 
 // Question Components
-function MCQQuestion({ question, answer, onChange }) {
+function MCQ({ question, answer, onChange }) {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 mb-4">{question.text}</h3>
@@ -58,7 +56,7 @@ function MCQQuestion({ question, answer, onChange }) {
   );
 }
 
-function CheckboxQuestion({ question, answer, onChange }) {
+function Checkbox({ question, answer, onChange }) {
   const selectedOptions = Array.isArray(answer) ? answer : [];
   
   const handleChange = (option) => {
@@ -91,7 +89,7 @@ function CheckboxQuestion({ question, answer, onChange }) {
   );
 }
 
-function ShortAnswerQuestion({ question, answer, onChange }) {
+function ShortAnswer({ question, answer, onChange }) {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 mb-4">{question.text}</h3>
@@ -106,7 +104,7 @@ function ShortAnswerQuestion({ question, answer, onChange }) {
   );
 }
 
-function LongAnswerQuestion({ question, answer, onChange }) {
+function LongAnswer({ question, answer, onChange }) {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 mb-4">{question.text}</h3>
@@ -121,7 +119,7 @@ function LongAnswerQuestion({ question, answer, onChange }) {
   );
 }
 
-function RatingQuestion({ question, answer, onChange }) {
+function Rating({ question, answer, onChange }) {
   const scale = question.scale || 5;
   
   return (
@@ -153,7 +151,7 @@ function RatingQuestion({ question, answer, onChange }) {
   );
 }
 
-function DropdownQuestion({ question, answer, onChange }) {
+function Dropdown({ question, answer, onChange }) {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 mb-4">{question.text}</h3>
@@ -174,7 +172,7 @@ function DropdownQuestion({ question, answer, onChange }) {
   );
 }
 
-function FileUploadQuestion({ question, answer, onChange }) {
+function FileUpload({ question, answer, onChange }) {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 mb-4">{question.text}</h3>
@@ -201,7 +199,7 @@ function FileUploadQuestion({ question, answer, onChange }) {
   );
 }
 
-function DateQuestion({ question, answer, onChange }) {
+function Date({ question, answer, onChange }) {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 mb-4">{question.text}</h3>
@@ -218,7 +216,7 @@ function DateQuestion({ question, answer, onChange }) {
   );
 }
 
-function TimeQuestion({ question, answer, onChange }) {
+function Time({ question, answer, onChange }) {
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-gray-800 mb-4">{question.text}</h3>
@@ -241,45 +239,24 @@ export default function FillForm() {
   const navigate = useNavigate();
   const [form, setForm] = useState(null);
   const [answers, setAnswers] = useState({});
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    // For demo purposes, using localStorage instead of API
-    const savedForms = JSON.parse(localStorage.getItem('savedForms') || '[]');
-    const foundForm = savedForms.find(f => f.id === formId);
-    
-    if (foundForm) {
-      setForm(foundForm);
-    } else {
-      // Fallback demo form
-      setForm({
-        id: formId,
-        title: "Sample Form",
-        description: "This is a sample form for demonstration",
-        questions: [
-          {
-            id: '1',
-            type: 'mcq',
-            text: 'What is your favorite color?',
-            options: ['Red', 'Blue', 'Green', 'Yellow']
-          },
-          {
-            id: '2',
-            type: 'rating',
-            text: 'How would you rate this form?',
-            scale: 5
-          },
-          {
-            id: '3',
-            type: 'short',
-            text: 'What is your name?'
-          }
-        ]
-      });
-    }
+    const loadForm = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/forms/${formId}`);
+        if (!response.ok) throw new Error('Form not found');
+        const formData = await response.json();
+        setForm(formData);
+      } catch (error) {
+        console.error('Error loading form:', error);
+        setForm(null);
+      }
+    };
+
+    if (formId) loadForm();
   }, [formId]);
 
   const handleAnswerChange = (questionId, value) => {
@@ -287,57 +264,53 @@ export default function FillForm() {
     setErrors(prev => ({ ...prev, [questionId]: false }));
   };
 
-  const validateCurrentQuestion = () => {
-    const question = form.questions[currentQuestion];
-    const answer = answers[question.id];
-    
-    if (!answer || (Array.isArray(answer) && answer.length === 0)) {
-      setErrors(prev => ({ ...prev, [question.id]: true }));
-      return false;
-    }
-    return true;
-  };
-
-  const nextQuestion = () => {
-    if (validateCurrentQuestion()) {
-      setCurrentQuestion(prev => Math.min(prev + 1, form.questions.length - 1));
-    }
-  };
-
-  const prevQuestion = () => {
-    setCurrentQuestion(prev => Math.max(prev - 1, 0));
+  const validateAll = () => {
+    let valid = true;
+    const newErrors = {};
+    form.questions.forEach(question => {
+      const answer = answers[question.id];
+      if (!answer || (Array.isArray(answer) && answer.length === 0)) {
+        newErrors[question.id] = true;
+        valid = false;
+      }
+    });
+    setErrors(newErrors);
+    return valid;
   };
 
   const handleSubmit = async () => {
-    if (!validateCurrentQuestion()) return;
-    
+    if (!validateAll()) return;
+
     setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      const answersArray = Object.entries(answers).map(([questionId, answer]) => ({
+        questionId,
+        answer
+      }));
+
+      const response = await fetch(`http://localhost:5000/api/forms/${formId}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers: answersArray })
+      });
+
+      if (!response.ok) throw new Error('Failed to submit form');
+
       setIsSubmitting(false);
       setShowSuccess(true);
-      
-      // Save response to localStorage for demo
-      const responses = JSON.parse(localStorage.getItem('formResponses') || '[]');
-      responses.push({
-        id: crypto.randomUUID(),
-        formId,
-        answers,
-        submittedAt: new Date().toISOString()
-      });
-      localStorage.setItem('formResponses', JSON.stringify(responses));
-      
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
-    }, 1500);
+      setTimeout(() => navigate('/forms'), 2000);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setIsSubmitting(false);
+      alert('Failed to submit form. Please try again.');
+    }
   };
 
   const renderQuestion = (question) => {
     const answer = answers[question.id];
     const hasError = errors[question.id];
-    
+
     const questionProps = {
       question,
       answer,
@@ -346,23 +319,23 @@ export default function FillForm() {
 
     let QuestionComponent;
     switch (question.type) {
-      case 'mcq': QuestionComponent = MCQQuestion; break;
-      case 'checkbox': QuestionComponent = CheckboxQuestion; break;
-      case 'short': QuestionComponent = ShortAnswerQuestion; break;
-      case 'long': QuestionComponent = LongAnswerQuestion; break;
-      case 'rating': QuestionComponent = RatingQuestion; break;
-      case 'dropdown': QuestionComponent = DropdownQuestion; break;
-      case 'file': QuestionComponent = FileUploadQuestion; break;
-      case 'date': QuestionComponent = DateQuestion; break;
-      case 'time': QuestionComponent = TimeQuestion; break;
+      case 'mcq': QuestionComponent = MCQ; break;
+      case 'checkbox': QuestionComponent = Checkbox; break;
+      case 'short': QuestionComponent = ShortAnswer; break;
+      case 'long': QuestionComponent = LongAnswer; break;
+      case 'rating': QuestionComponent = Rating; break;
+      case 'dropdown': QuestionComponent = Dropdown; break;
+      case 'file': QuestionComponent = FileUpload; break;
+      case 'date': QuestionComponent = Date; break;
+      case 'time': QuestionComponent = Time; break;
       default: return <div>Unsupported question type</div>;
     }
 
     return (
-      <div className={`transition-all duration-300 ${hasError ? 'animate-shake' : ''}`}>
+      <div key={question.id} className={`mb-8 transition-all duration-300 ${hasError ? 'animate-shake' : ''}`}>
         <QuestionComponent {...questionProps} />
         {hasError && (
-          <div className="flex items-center gap-2 mt-4 text-red-600">
+          <div className="flex items-center gap-2 mt-2 text-red-600">
             <AlertCircle size={16} />
             <span className="text-sm">This question is required</span>
           </div>
@@ -397,47 +370,22 @@ export default function FillForm() {
     );
   }
 
-  const isLastQuestion = currentQuestion === form.questions.length - 1;
-  const isFirstQuestion = currentQuestion === 0;
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">
+      <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-800 mb-4">{form.title}</h1>
             <p className="text-lg text-gray-600 mb-6">{form.description}</p>
-            <ProgressBar current={currentQuestion + 1} total={form.questions.length} />
           </div>
 
-          {/* Question Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-100">
-            <div className="mb-6">
-              <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-4">
-                Question {currentQuestion + 1} of {form.questions.length}
-              </span>
-            </div>
-            
-            {renderQuestion(form.questions[currentQuestion])}
-          </div>
+          {/* Questions */}
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            {form.questions.map(renderQuestion)}
 
-          {/* Navigation */}
-          <div className="flex justify-between items-center">
-            <button
-              onClick={prevQuestion}
-              disabled={isFirstQuestion}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-                isFirstQuestion
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              <ArrowLeft size={16} />
-              Previous
-            </button>
-
-            {isLastQuestion ? (
+            {/* Submit Button */}
+            <div className="mt-6 flex justify-center">
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
@@ -455,15 +403,7 @@ export default function FillForm() {
                   </>
                 )}
               </button>
-            ) : (
-              <button
-                onClick={nextQuestion}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium hover:from-blue-600 hover:to-purple-600 transition-all duration-200"
-              >
-                Next
-                <ArrowRight size={16} />
-              </button>
-            )}
+            </div>
           </div>
         </div>
       </div>

@@ -1,59 +1,44 @@
 import mongoose from 'mongoose';
 
-// Options schema (used in MCQ and Cloze blanks with choices)
-const OptionSchema = new mongoose.Schema({
-  text: { type: String, required: true },
-  isCorrect: { type: Boolean, default: false }
-});
-
-// Sub-question schema (used inside Comprehension)
-const SubQuestionSchema = new mongoose.Schema({
-  type: { type: String, required: true, enum: ["mcq"] }, // only MCQ for now
-  question: { type: String, required: true },
-  options: [OptionSchema],  // for MCQ choices
-  correctAnswer: { type: mongoose.Schema.Types.Mixed }, // could be string or index
-  image: String
-});
-
-// Cloze blank schema
-const ClozeBlankSchema = new mongoose.Schema({
-  index: { type: Number, required: true },         // blank position
-  answer: { type: String, required: true },        // correct answer
-  options: [OptionSchema]                          // if present → MCQ style blank
-});
-
-// Categorize item schema
-const CategorizeItemSchema = new mongoose.Schema({
-  text: { type: String, required: true },
-  correctCategory: { type: String, required: true }
-});
-
-// Main Question schema
 const QuestionSchema = new mongoose.Schema({
+  id: { type: String, required: true }, 
   type: { 
     type: String, 
     required: true, 
-    enum: ["comprehension", "cloze", "categorize", "mcq"] 
+    enum: ["mcq", "short", "long", "rating", "checkbox", "dropdown", "file", "date", "time", "categorize"] 
   },
-  title: { type: String },   
-  passage: String,           // for comprehension
-  clozeText: String,         // for cloze question text
-  blanks: [ClozeBlankSchema],// for cloze blanks
-  categories: [String],      // for categorize
-  items: [CategorizeItemSchema], // categorize items
-  questionText: String,      // for standalone MCQ
-  options: [OptionSchema],   // for standalone MCQ
-  subQuestions: [SubQuestionSchema], // comprehension sub-questions
-  image: String
+  text: { type: String, required: true },
+  
+  // For MCQ, Checkbox, Dropdown
+  options: [{ type: String }],
+  
+  // For Rating
+  scale: { type: Number, default: 5 },
+  
+  // For Categorize
+  categories: [{ type: String }],
+  items: [{ type: String }],
+  
+  // Optional fields
+  required: { type: Boolean, default: false },
+  placeholder: String,
+  description: String
 });
 
 // Form schema
 const FormSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  description: String,
-  image: String,
+  description: { type: String, default: "" },
   questions: [QuestionSchema],
-  createdAt: { type: Date, default: Date.now }
+  theme: { type: String, default: "default" },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Update the updatedAt field before saving
+FormSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
 });
 
 export default mongoose.model("Form", FormSchema);

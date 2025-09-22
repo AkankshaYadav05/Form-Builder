@@ -1,123 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit3, Trash2, Eye, Calendar, Share2, Copy, ExternalLink } from 'lucide-react';
+import axios from 'axios';
+import { ArrowLeft, Plus, Edit3, Trash2, Eye, Calendar, Share2 } from 'lucide-react';
+import StatsCard from '../components/StatsCard';
+import ShareModal from '../components/ShareModal';
+import DeleteModal from '../components/DeleteModal';
 
-// Share Modal Component
-function ShareModal({ isOpen, onClose, formId, formTitle }) {
-  const [copied, setCopied] = useState(false);
-  
-  if (!isOpen) return null;
-
-  const shareUrl = `${window.location.origin}/form/${formId}/fill`;
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Share Form</h2>
-        <p className="text-gray-600 mb-4">Share "{formTitle}" with others using this link:</p>
-        
-        <div className="flex items-center gap-2 mb-4">
-          <input
-            type="text"
-            value={shareUrl}
-            readOnly
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-700"
-          />
-          <button
-            onClick={handleCopy}
-            className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-1"
-          >
-            <Copy size={16} />
-            {copied ? 'Copied!' : 'Copy'}
-          </button>
-        </div>
-
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-200"
-          >
-            Close
-          </button>
-          <button
-            onClick={() => window.open(shareUrl, '_blank')}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 flex items-center gap-1"
-          >
-            <ExternalLink size={16} />
-            Open Form
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Delete Confirmation Modal
-function DeleteModal({ isOpen, onClose, onConfirm, formTitle, isDeleting }) {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Delete Form</h2>
-        <p className="text-gray-600 mb-6">
-          Are you sure you want to delete <span className="font-semibold">"{formTitle}"</span>? 
-          This action cannot be undone and will remove all associated responses.
-        </p>
-        
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            disabled={isDeleting}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-200 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isDeleting}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200 disabled:opacity-50"
-          >
-            {isDeleting ? 'Deleting...' : 'Delete Form'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FormList() {
+function FormsList() {
   const navigate = useNavigate();
   const [forms, setForms] = useState([]);
   const [shareModal, setShareModal] = useState({ isOpen: false, formId: null, formTitle: '' });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, form: null });
   const [isDeleting, setIsDeleting] = useState(false);
   const [message, setMessage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedForms = JSON.parse(localStorage.getItem('savedForms') || '[]');
-    setForms(savedForms);
+    loadForms();
   }, []);
+
+  const loadForms = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:5000/api/forms');
+      setForms(response.data);
+    } catch (error) {
+      console.error('Error loading forms:', error);
+      setMessage({ type: 'error', text: 'Failed to load forms. Please try again.' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const deleteForm = async (formId) => {
     setIsDeleting(true);
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const updatedForms = forms.filter(form => form.id !== formId);
-      setForms(updatedForms);
-      localStorage.setItem('savedForms', JSON.stringify(updatedForms));
+      await axios.delete(`http://localhost:5000/api/forms/${formId}`);
+      setForms(forms.filter(form => form._id !== formId));
       
       setMessage({ type: 'success', text: 'Form deleted successfully!' });
       setTimeout(() => setMessage(null), 3000);
@@ -158,7 +77,7 @@ function FormList() {
     <div className="bg-gray-50 min-h-screen">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-8xl mx-6 px-6 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <button
@@ -205,7 +124,12 @@ function FormList() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {forms.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading forms...</p>
+          </div>
+        ) : forms.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-gray-400 mb-6">
               <Edit3 size={64} className="mx-auto" />
@@ -244,53 +168,32 @@ function FormList() {
           <>
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Forms</p>
-                    <p className="text-2xl font-bold text-gray-900">{forms.length}</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Edit3 className="w-6 h-6 text-blue-600" />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Questions</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {forms.reduce((total, form) => total + (form.questions?.length || 0), 0)}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <Calendar className="w-6 h-6 text-green-600" />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">This Month</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {forms.filter(form => {
-                        const formDate = new Date(form.createdAt);
-                        const now = new Date();
-                        return formDate.getMonth() === now.getMonth() && formDate.getFullYear() === now.getFullYear();
-                      }).length}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <Plus className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
-              </div>
+              <StatsCard 
+                icon={<Edit3 className="w-6 h-6" />}
+                title="Total Forms"
+                value={forms.length}
+                color="blue"
+              />
+              <StatsCard 
+                icon={<Calendar className="w-6 h-6" />}
+                title="Total Questions"
+                value={forms.reduce((total, form) => total + (form.questions?.length || 0), 0)}
+                color="green"
+              />
+              <StatsCard 
+                icon={<Plus className="w-6 h-6" />}
+                title="This Month"
+                value={forms.filter(form => {
+                  const formDate = new Date(form.createdAt);
+                  const now = new Date();
+                  return formDate.getMonth() === now.getMonth() && formDate.getFullYear() === now.getFullYear();
+                }).length}
+                color="purple"
+              />
             </div>
 
             {/* Forms Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {forms.map((form) => (
                 <div
                   key={form.id}
@@ -303,15 +206,15 @@ function FormList() {
                       </h3>
                       <div className="flex gap-1">
                         <button
-                          onClick={() => navigate(`/editor?edit=${form.id}`)}
-                          className="p-2 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200"
+                          onClick={() => navigate(`/editor?edit=${form._id}`)}
+                          className="p-2 text-blue-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200"
                           title="Edit form"
                         >
                           <Edit3 size={16} />
                         </button>
                         <button
-                          onClick={() => setShareModal({ isOpen: true, formId: form.id, formTitle: form.title })}
-                          className="p-2 text-green-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition duration-200"
+                          onClick={() => setShareModal({ isOpen: true, formId: form._id, formTitle: form.title })}
+                          className="p-2 text-green-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition duration-200"
                           title="Share form"
                         >
                           <Share2 size={16} />
@@ -362,19 +265,19 @@ function FormList() {
 
                     <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                       <button
-                        onClick={() => navigate(`/editor?edit=${form.id}`)}
+                        onClick={() => navigate(`/editor?edit=${form._id}`)}
                         className="flex items-center gap-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200 text-sm font-medium"
                       >
                         <Edit3 size={14} />
                         Edit
                       </button>
                       <button
-                        onClick={() => navigate(`/forms/${form.id}/responses`)}
+                        onClick={() => navigate(`/forms/${form._id}/responses`)}
                         className="flex items-center gap-1 px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200 text-sm font-medium"
                         title="View responses"
                       >
                         <Eye size={14} />
-                        Responses
+                        View Responses
                       </button>
                     </div>
                   </div>
@@ -396,7 +299,7 @@ function FormList() {
       <DeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, form: null })}
-        onConfirm={() => deleteForm(deleteModal.form?.id)}
+        onConfirm={() => deleteForm(deleteModal.form?._id)}
         formTitle={deleteModal.form?.title}
         isDeleting={isDeleting}
       />
@@ -404,4 +307,4 @@ function FormList() {
   );
 }
 
-export default FormList;
+export default FormsList;
