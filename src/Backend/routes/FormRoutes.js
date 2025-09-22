@@ -4,165 +4,163 @@ import Response from "../models/Response.js";
 
 const router = express.Router();
 
-// POST /api/forms
-router.post('/', async (req, res) => {
-  try {
-    const form = new Form(req.body);
-    await form.save();
-    res.status(201).json(form);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// GET /api/forms/:id
-router.get('/:id', async (req, res) => {
-  try {
-    const form = await Form.findById(req.params.id);
-    if (!form) return res.status(404).json({ message: 'Form not found' });
-    res.json(form);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-
-//PUT
-router.put('/:id', async (req, res) => {
-  try {
-    const updatedForm = await Form.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updatedForm);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-
 // GET all forms
 router.get('/', async (req, res) => {
   try {
     const forms = await Form.find().sort({ createdAt: -1 });
     res.json(forms);
   } catch (err) {
+    console.error('Error fetching forms:', err);
     res.status(500).json({ message: err.message });
   }
 });
 
-// DELETE /api/forms/:id
+// POST /api/forms - Create new form
+router.post('/', async (req, res) => {
+  try {
+    const formData = {
+      ...req.body,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const form = new Form(formData);
+    await form.save();
+    res.status(201).json(form);
+  } catch (err) {
+    console.error('Error creating form:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/forms/:id - Get specific form
+router.get('/:id', async (req, res) => {
+  try {
+    const form = await Form.findById(req.params.id);
+    if (!form) {
+      return res.status(404).json({ message: 'Form not found' });
+    }
+    res.json(form);
+  } catch (err) {
+    console.error('Error fetching form:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT /api/forms/:id - Update form
+router.put('/:id', async (req, res) => {
+  try {
+    const updateData = {
+      ...req.body,
+      updatedAt: new Date()
+    };
+    
+    const updatedForm = await Form.findByIdAndUpdate(
+      req.params.id, 
+      updateData, 
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedForm) {
+      return res.status(404).json({ message: 'Form not found' });
+    }
+    
+    res.json(updatedForm);
+  } catch (err) {
+    console.error('Error updating form:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// DELETE /api/forms/:id - Delete form
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await Form.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: 'Form not found' });
-    res.status(200).json({ message: 'Form deleted' });
+    if (!deleted) {
+      return res.status(404).json({ message: 'Form not found' });
+    }
+    
+    // Also delete all responses for this form
+    await Response.deleteMany({ formId: req.params.id });
+    
+    res.status(200).json({ message: 'Form and associated responses deleted successfully' });
   } catch (err) {
+    console.error('Error deleting form:', err);
     res.status(500).json({ message: err.message });
   }
 });
 
-
-router.post('/', async (req, res) => {
-  try {
-    const { formId, answers } = req.body;
-    const response = new Response({ formId, answers });
-    await response.save();
-    res.status(201).json({ message: 'Response saved', response });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-
+// POST /api/forms/:id/submit - Submit form response
 router.post("/:id/submit", async (req, res) => {
   try {
     const { id } = req.params;
-    const submittedAnswers = req.body.answers; // [{ questionId, answer }]
+    const { answers } = req.body; // Array of { questionId, answer }
 
     const form = await Form.findById(id);
     if (!form) {
       return res.status(404).json({ error: "Form not found" });
     }
 
-    let score = 0;
-
-    const answers = form.questions.map((q) => {
-      const userAnsObj = submittedAnswers.find(
-        (a) => a.questionId === q._id.toString()
-      );
-      const userAnswer = userAnsObj ? userAnsObj.answer : "";
-
-      let isCorrect = false;
-
-      switch (q.type) {
-        case "text":
-        case "mcq":
-          isCorrect =
-            userAnswer?.toString().trim().toLowerCase() ===
-            q.correctAnswer?.toString().trim().toLowerCase();
-          break;
-
-        case "cloze":
-          {
-            const expected = Array.isArray(q.correctAnswer)
-              ? q.correctAnswer.map((s) => s?.trim().toLowerCase())
-              : [String(q.correctAnswer ?? "").trim().toLowerCase()];
-
-            const given = Array.isArray(userAnswer)
-              ? userAnswer.map((s) => s?.trim().toLowerCase())
-              : [String(userAnswer ?? "").trim().toLowerCase()];
-
-            isCorrect =
-              expected.length === given.length &&
-              expected.every((exp, i) => exp === given[i]);
-          }
-          break;
-
-        case "categorize":
-          {
-            const expectedMap = q.correctAnswer || {}; // { item: category }
-            isCorrect = Object.keys(expectedMap).every((item) => {
-              const expectedCat = expectedMap[item];
-              const givenCat = userAnswer?.[item];
-              return (
-                givenCat &&
-                givenCat.toString().trim().toLowerCase() ===
-                  expectedCat.toString().trim().toLowerCase()
-              );
-            });
-          }
-          break;
-
-        default:
-          // if unknown type, mark as incorrect
-          isCorrect = false;
+    // Process answers and calculate score if needed
+    const processedAnswers = answers.map(userAnswer => {
+      const question = form.questions.find(q => q.id === userAnswer.questionId);
+      
+      if (!question) {
+        return {
+          questionId: userAnswer.questionId,
+          questionText: "Question not found",
+          questionType: "unknown",
+          answer: userAnswer.answer,
+          isCorrect: false
+        };
       }
 
-      if (isCorrect) score++;
-
+      // For now, we don't have correct answers defined, so we'll just store the response
       return {
-        questionId: q._id,
-        question: q.title,
-        type: q.type,
-        answer: userAnswer,
-        isCorrect,
+        questionId: userAnswer.questionId,
+        questionText: question.text,
+        questionType: question.type,
+        answer: userAnswer.answer,
+        isCorrect: false // Can be enhanced later with correct answer logic
       };
     });
 
-    const percentageScore = Math.round(
-      (score / form.questions.length) * 100
-    );
-
     const response = new Response({
       formId: id,
-      answers,
-      score: percentageScore,
+      answers: processedAnswers,
+      score: 0, // Can be calculated based on correct answers later
       submittedAt: new Date(),
+      submitterInfo: {
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        sessionId: req.sessionID || 'anonymous'
+      }
     });
 
     await response.save();
-    res.status(201).json(response);
+    res.status(201).json({ 
+      message: 'Response submitted successfully',
+      response: {
+        _id: response._id,
+        submittedAt: response.submittedAt,
+        score: response.score
+      }
+    });
   } catch (err) {
     console.error("Error saving response:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error while saving response" });
+  }
+});
+
+// GET /api/forms/:id/responses - Get all responses for a form
+router.get('/:id/responses', async (req, res) => {
+  try {
+    const responses = await Response.find({ formId: req.params.id })
+      .sort({ submittedAt: -1 });
+    res.json(responses);
+  } catch (err) {
+    console.error('Error fetching responses:', err);
+    res.status(500).json({ message: err.message });
   }
 });
 

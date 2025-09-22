@@ -281,7 +281,7 @@ export default function FormResponses() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/forms')}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
                 <ArrowLeft size={16} />
                 Back to Forms

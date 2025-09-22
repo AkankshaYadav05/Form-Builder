@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AuthForm from '../components/AuthForm';
+import axios from 'axios';
+
 import { 
   MousePointer, 
   Smartphone, 
@@ -13,6 +16,30 @@ import {
 function Home() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [auth, setAuth] = useState(null); // logged-in user
+  const [showAuth, setShowAuth] = useState(false); // show auth modal
+  const [authType, setAuthType] = useState("login"); // "login" or "signup"
+
+
+  const handleAuthSuccess = (email) => {
+    setAuth(email); // set user as logged in
+    setShowAuth(false);
+  };
+
+  const handleLogout = async () => {
+  try {
+    await axios.post(
+      "http://localhost:5000/api/users/logout",
+      {}, // body is empty
+      { withCredentials: true } // must include cookies
+    );
+    setAuth(null);        // clear frontend auth state
+    setShowAuth(false);   // close modal if open
+  } catch (err) {
+    console.error("Logout failed:", err);
+  }
+};
+
 
   const features = [
     {
@@ -81,77 +108,137 @@ function Home() {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Navbar */}
-      <nav className="px-6 md:px-10 py-4 border-b bg-white shadow-sm sticky top-0 z-20">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">✨FormBuilder</h1>
+<nav className="px-6 md:px-10 py-4 border-b bg-white shadow-sm sticky top-0 z-20">
+  <div className="flex justify-between items-center">
+    <h1 className="text-2xl font-bold text-gray-800">✨FormBuilder</h1>
 
-          {/* Hamburger Button */}
+    {/* Hamburger Button */}
+    <button
+      className="md:hidden text-2xl p-2"
+      onClick={() => setOpen(!open)}
+    >
+      {open ? <X size={24} /> : <Menu size={24} />}
+    </button>
+
+    {/* Desktop Menu */}
+    <div className="hidden md:flex items-center gap-6">
+      <button
+        onClick={scrollToTemplates}
+        className="text-gray-700 hover:text-blue-600 transition duration-200"
+      >
+        Templates
+      </button>
+      <button
+        onClick={() => navigate("/forms")}
+        className="text-gray-700 hover:text-blue-600 transition duration-200"
+      >
+        My Forms
+      </button>
+      <button
+        onClick={() => navigate("/editor")}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium shadow-sm transition duration-200 transform hover:scale-105"
+      >
+        Create Forms
+      </button>
+
+      {!auth ? (
+        <button
+          onClick={() => { setShowAuth(true); setAuthType("login"); }}
+          className="text-gray-700 border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200"
+        >
+          Login / Sign Up
+        </button>
+      ) : (
+        <>
+          <span className="text-gray-700 px-4 py-2 rounded-xl">Welcome, {auth}!</span>
           <button
-            className="md:hidden text-2xl p-2"
-            onClick={() => setOpen(!open)}
+            onClick={async () => {
+              await axios.post("http://localhost:5000/api/users/logout", {}, { withCredentials: true });
+              setAuth(null);
+              {handleLogout}
+            }}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl"
           >
-            {open ? <X size={24} /> : <Menu size={24} />}
+            Logout
           </button>
+        </>
+      )}
+    </div>
+  </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-6">
-            <button
-              onClick={scrollToTemplates}
-              className="text-gray-700 hover:text-blue-600 transition duration-200"
-            >
-              Templates
-            </button>
-            <button
-              onClick={() => navigate("/forms")}
-              className="text-gray-700 hover:text-blue-600 transition duration-200"
-            >
-              My Forms
-            </button>
-            <button
-              onClick={() => navigate("/editor")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium shadow-sm transition duration-200 transform hover:scale-105"
-            >
-              Create Forms
-            </button>
-            <button className="text-gray-700 border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200">
-              Login
-            </button>
-          </div>
-        </div>
+  {/* Mobile Dropdown */}
+  {open && (
+    <div className="mt-4 flex flex-col space-y-3 md:hidden bg-white border rounded-lg p-4 shadow-lg">
+      <button onClick={scrollToTemplates} className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200">
+        Templates
+      </button>
+      <button
+        onClick={() => { navigate("/forms"); setOpen(false); }}
+        className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200"
+      >
+        My Forms
+      </button>
+      <button
+        onClick={() => { navigate("/editor"); setOpen(false); }}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium text-left shadow-sm transition duration-200"
+      >
+        Create Forms
+      </button>
 
-        {/* Mobile Dropdown */}
-        {open && (
-          <div className="mt-4 flex flex-col space-y-3 md:hidden bg-white border rounded-lg p-4 shadow-lg">
-            <button
-              onClick={scrollToTemplates}
-              className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200"
-            >
-              Templates
-            </button>
-            <button
-              onClick={() => {
-                navigate("/forms");
-                setOpen(false);
-              }}
-              className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200"
-            >
-              My Forms
-            </button>
-            <button
-              onClick={() => {
-                navigate("/editor");
-                setOpen(false);
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium text-left shadow-sm transition duration-200"
-            >
-              Create Forms
-            </button>
-            <button className="text-gray-700 border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 text-left transition duration-200">
-              Login
-            </button>
-          </div>
-        )}
-      </nav>
+      {!auth ? (
+        <button
+          onClick={() => { setShowAuth(true); setAuthType("login"); setOpen(false); }}
+          className="text-gray-700 border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200"
+        >
+          Login / Sign Up
+        </button>
+      ) : (
+        <>
+          <span className="text-gray-700 px-4 py-2 rounded-xl">Welcome, {auth}!</span>
+          <button
+            onClick={async () => {
+              await axios.post("http://localhost:5000/api/users/logout", {}, { withCredentials: true });
+              setAuth(null);
+            }}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl"
+          >
+            Logout
+          </button>
+        </>
+      )}
+    </div>
+  )}
+</nav>
+
+{/* Auth Modal (always outside navbar/mobile dropdown) */}
+{showAuth && !auth && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-2xl p-6 w-full max-w-md relative">
+      <button
+        onClick={() => setShowAuth(false)}
+        className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+      >
+        X
+      </button>
+      <div className="flex justify-center mb-4">
+        <button
+          className={`px-4 py-2 rounded-l ${authType === "login" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+          onClick={() => setAuthType("login")}
+        >
+          Login
+        </button>
+        <button
+          className={`px-4 py-2 rounded-r ${authType === "signup" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+          onClick={() => setAuthType("signup")}
+        >
+          Sign Up
+        </button>
+      </div>
+      <AuthForm type={authType} onSuccess={handleAuthSuccess} />
+    </div>
+  </div>
+)}
+
 
       {/* Hero */}
       <section className="text-center px-6 py-24 bg-gradient-to-br from-blue-100 via-white to-purple-50">
@@ -169,6 +256,9 @@ function Home() {
           Create Your First Form
         </button>
       </section>
+
+      
+        
 
       {/* Features */}
       <section className="max-w-6xl mx-auto px-6 py-20">
