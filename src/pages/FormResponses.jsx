@@ -78,6 +78,20 @@ export default function FormResponses() {
     );
   }
 
+  const handleDeleteResponse = async (responseId) => {
+  if (!window.confirm("Are you sure you want to delete this response?")) return;
+
+  try {
+    await axios.delete(`http://localhost:5000/api/responses/${responseId}`);
+    setResponses((prev) => prev.filter((r) => r._id !== responseId));
+    alert("Response deleted successfully");
+  } catch (error) {
+    console.error("Failed to delete response:", error);
+    alert("Failed to delete response");
+  }
+};
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -204,8 +218,10 @@ export default function FormResponses() {
                 response={response}
                 index={index}
                 onView={handleViewResponse}
+                onDelete={handleDeleteResponse}
               />
             ))}
+            
           </div>
         )}
       </div>

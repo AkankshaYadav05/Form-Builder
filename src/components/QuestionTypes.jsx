@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Star, Upload, Calendar, Clock, ChevronDown, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 
 export function QuestionRenderer({ question, answer, hasError, onChange }) {
   const questionProps = { question, answer, onChange };
@@ -256,33 +257,68 @@ function Categorize({ question, answer, onChange }) {
 }
 
 function FileUpload({ question, answer, onChange }) {
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  const openFileDialog = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await axios.post('http://localhost:5000/api/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      // res.data.filePath contains something like "/uploads/filename.ext"
+      onChange(res.data.filePath);
+    } catch (err) {
+      console.error(err);
+      alert('File upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">{question.text}</h3>
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-8 text-center hover:border-blue-400 transition-colors duration-200">
+      <div
+        onClick={openFileDialog}
+        className={`border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-8 text-center hover:border-blue-400 transition-colors duration-200 cursor-pointer ${
+          uploading ? 'opacity-50 pointer-events-none' : ''
+        }`}
+      >
         <Upload className="mx-auto text-gray-400 mb-3 sm:mb-4" size={40} />
         <p className="text-sm sm:text-base text-gray-600 mb-2 px-2">
           Drag and drop your file here, or click to browse
         </p>
+        {uploading && <p className="text-xs text-gray-500">Uploading...</p>}
         <input
           type="file"
-          onChange={(e) => onChange(e.target.files?.[0]?.name || '')}
+          ref={fileInputRef}
           className="hidden"
-          id={`file-${question.id}`}
+          onChange={handleFileSelect}
         />
-        <label
-          htmlFor={`file-${question.id}`}
-          className="inline-block px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 transition-colors duration-200"
-        >
-          Choose File
-        </label>
         {answer && (
-          <p className="mt-2 text-xs sm:text-sm text-green-600 break-all px-2">Selected: {answer}</p>
+          <p className="mt-2 text-xs sm:text-sm text-green-600 break-all px-2">
+            <a href={`http://localhost:5000${answer}`} target="_blank" rel="noopener noreferrer">
+              {answer.split('/').pop()}
+            </a>
+          </p>
         )}
       </div>
     </div>
   );
 }
+
 
 function Date({ question, answer, onChange }) {
   return (

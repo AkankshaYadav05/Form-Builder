@@ -19,6 +19,7 @@ export default function ResponseDetailModal({ response, form, isOpen, onClose, r
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl sm:max-w-2xl md:max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
           <div>
@@ -59,96 +60,104 @@ export default function ResponseDetailModal({ response, form, isOpen, onClose, r
                       {question.type}
                     </span>
                   </div>
-                  <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
-                    {question.type === "rating" ? (
-                      <div className="flex items-center gap-2 flex-wrap">
-    <div className="flex">
-      {Array.from({ length: question.scale || 5 }, (_, i) => (
-        <Star
-          key={i}
-          size={20}
-          className={
-            i < (answer || 0)
-              ? "text-yellow-400 fill-current"
-              : "text-gray-300"
-          }
-        />
-      ))}
-    </div>
-    <span className="text-gray-600 ml-2">
-      ({answer || 0}/{question.scale || 5})
-    </span>
-  </div>
-) : question.type === "categorize" ? (
-  // 🧩 Categorize question rendering
-  <div className="space-y-3">
-    {answer && typeof answer === "object" ? (
-      Object.keys(answer).map((category, i) => (
-        <div key={i} className="bg-gray-50 p-3 rounded-lg border">
-          <p className="font-medium text-gray-800 mb-2">{category}</p>
-          {Array.isArray(answer[category]) && answer[category].length > 0 ? (
-            <ul className="list-disc ml-5 text-gray-700">
-              {answer[category].map((item, j) => (
-                <li key={j}>{item}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-gray-500 italic">No items categorized here</p>
-          )}
-        </div>
-      ))
-    ) : (
-      <p className="text-gray-500 italic">No categories found.</p>
-    )}
-  </div>) :question.type === "file" ? (
-    <div className="space-y-2">
-      {answer ? (
-        Array.isArray(answer) ? (
-          answer.map((file, i) => (
-            <a
-              key={i}
-              href={`http://localhost:5000/uploads/${file}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
-            >
-              {file.split("/").pop()}
-            </a>
-          ))
-        ) : (
-          <a
-            href={`http://localhost:5000/uploads/${answer}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
-          >
-            {answer.split("/").pop()}
-          </a>
-        )
-      ) : (
-        <p className="text-gray-500 italic">No file uploaded</p>
-      )}
-    </div>
 
-                    ) : Array.isArray(answer) ? (
-                      <div className="flex flex-wrap gap-2">
-                        {answer.map((item, i) => (
-                          <span
-                            key={i}
-                            className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                          >
-                            {item}
-                          </span>
-                        ))}
+                  <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200">
+                    {/* Rating Question */}
+                    {question.type === "rating" && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex">
+                          {Array.from({ length: question.scale || 5 }, (_, i) => (
+                            <Star
+                              key={i}
+                              size={20}
+                              className={
+                                i < (answer || 0)
+                                  ? "text-yellow-400 fill-current"
+                                  : "text-gray-300"
+                              }
+                            />
+                          ))}
+                        </div>
+                        <span className="text-gray-600 ml-2">
+                          ({answer || 0}/{question.scale || 5})
+                        </span>
                       </div>
-                    ) : (
-                      <p className="text-gray-700 font-medium">
-                        {answer || (
-                          <span className="text-gray-400 italic">
-                            No answer provided
-                          </span>
+                    )}
+
+                    {/* Categorize Question */}
+                    {question.type === "categorize" && (
+                      <div className="space-y-3">
+                        {answer && typeof answer === "object" ? (
+                          Object.keys(answer).map((category, i) => (
+                            <div key={i} className="bg-gray-50 p-3 rounded-lg border">
+                              <p className="font-medium text-gray-800 mb-2">{category}</p>
+                              {Array.isArray(answer[category]) && answer[category].length > 0 ? (
+                                <ul className="list-disc ml-5 text-gray-700">
+                                  {answer[category].map((item, j) => (
+                                    <li key={j}>{item}</li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p className="text-sm text-gray-500 italic">No items categorized here</p>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-gray-500 italic">No categories found.</p>
                         )}
-                      </p>
+                      </div>
+                    )}
+
+                    {/* File Upload Question */}
+                    {question.type === "file" && (
+                      <div className="space-y-2">
+                        {answer ? (
+                          Array.isArray(answer) ? (
+                            answer.map((file, i) => (
+                              <a
+                                key={i}
+                                href={`http://localhost:5000${file}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                {file.split("/").pop()}
+                              </a>
+                            ))
+                          ) : (
+                            <a
+                              href={`http://localhost:5000${answer}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              {answer.split("/").pop()}
+                            </a>
+                          )
+                        ) : (
+                          <p className="text-gray-500 italic">No file uploaded</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Other Question Types */}
+                    {question.type !== "rating" && question.type !== "categorize" && question.type !== "file" && (
+                      Array.isArray(answer) ? (
+                        <div className="flex flex-wrap gap-2">
+                          {answer.map((item, i) => (
+                            <span
+                              key={i}
+                              className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                            >
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-700 font-medium">
+                          {answer || <span className="text-gray-400 italic">No answer provided</span>}
+                        </p>
+                      )
                     )}
                   </div>
                 </div>
