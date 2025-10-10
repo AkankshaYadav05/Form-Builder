@@ -1,6 +1,7 @@
 import express from 'express';
 import Form from '../models/Form.js';
 import Response from "../models/Response.js";
+import { isAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/forms - Create new form
-router.post('/', async (req, res) => {
+router.post('/', isAuth, async (req, res) => {
   try {
     const formData = {
       ...req.body,
@@ -48,7 +49,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/forms/:id - Update form
-router.put('/:id', async (req, res) => {
+router.put('/:id', isAuth, async (req, res) => {
   try {
     const updateData = {
       ...req.body,
@@ -73,7 +74,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/forms/:id - Delete form
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', isAuth, async (req, res) => {
   try {
     const deleted = await Form.findByIdAndDelete(req.params.id);
     if (!deleted) {
@@ -111,17 +112,14 @@ router.post("/:id/submit", async (req, res) => {
           questionText: "Question not found",
           questionType: "unknown",
           answer: userAnswer.answer,
-          isCorrect: false
         };
       }
 
-      // For now, we don't have correct answers defined, so we'll just store the response
       return {
         questionId: userAnswer.questionId,
         questionText: question.text,
         questionType: question.type,
         answer: userAnswer.answer,
-        isCorrect: false // Can be enhanced later with correct answer logic
       };
     });
 
@@ -143,7 +141,6 @@ router.post("/:id/submit", async (req, res) => {
       response: {
         _id: response._id,
         submittedAt: response.submittedAt,
-        score: response.score
       }
     });
   } catch (err) {
@@ -153,7 +150,7 @@ router.post("/:id/submit", async (req, res) => {
 });
 
 // GET /api/forms/:id/responses - Get all responses for a form
-router.get('/:id/responses', async (req, res) => {
+router.get('/:id/responses', isAuth, async (req, res) => {
   try {
     const responses = await Response.find({ formId: req.params.id })
       .sort({ submittedAt: -1 });

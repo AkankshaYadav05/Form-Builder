@@ -11,20 +11,20 @@ function Date({ question, onChange }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 sm:p-6">
       {/* Question text */}
       <div className="mb-4">
         <input
           type="text"
           value={question.text}
           onChange={(e) => updateText(e.target.value)}
-          className="text-lg font-medium w-75 focus:outline-none border-b border-gray-200 pb-2"
+          className="text-base sm:text-lg font-medium w-75 focus:outline-none border-b border-gray-200 pb-2"
           placeholder="Enter your date question"
         />
       </div>
 
       {/* Date input */}
-      <div className="mt-4 relative">
+      <div className="mt-4 relative flex items-center gap-2">
         <input
           type="date"
           value={question.answer || ""}

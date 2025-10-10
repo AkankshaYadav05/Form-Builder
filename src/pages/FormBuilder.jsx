@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { PlusCircle, List, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 
-// Question Components
 import MCQ from "../components/questions/MCQ";
 import LongAnswer from "../components/questions/LongAnswer";
 import Rating from "../components/questions/Rating";
@@ -15,7 +14,6 @@ import Dropdown from "../components/questions/Dropdown";
 import DateQuestion from "../components/questions/Date";
 import TimeQuestion from "../components/questions/Time";
 
-// New Components
 import FormHeader from "../components/FormHeader";
 import FormSidebar from "../components/FormSidebar";
 import FormPreview from "../components/FormPreview";
@@ -29,6 +27,7 @@ export default function FormBuilder() {
   const [formTheme, setFormTheme] = useState('default');
   const [isEditing, setIsEditing] = useState(false);
   const [currentFormId, setCurrentFormId] = useState(null);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -128,14 +127,13 @@ export default function FormBuilder() {
     const searchParams = new URLSearchParams(location.search);
     const templateId = searchParams.get('template');
     const editId = searchParams.get('edit');
-    
+
     if (templateId && TEMPLATE_DATA[templateId]) {
       const template = TEMPLATE_DATA[templateId];
       setTitle(template.title);
       setDescription(template.description);
       setQuestions(template.questions);
     } else if (editId) {
-      // Load existing form for editing
       loadFormForEditing(editId);
     }
   }, [location]);
@@ -194,7 +192,7 @@ export default function FormBuilder() {
 
     try {
       setLoading(true);
-      
+
       const formData = {
         title,
         description,
@@ -203,15 +201,13 @@ export default function FormBuilder() {
       };
 
       if (isEditing && currentFormId) {
-        // Update existing form
         await axios.put(`http://localhost:5000/api/forms/${currentFormId}`, formData);
         alert("Form updated successfully!");
       } else {
-        // Create new form
         await axios.post("http://localhost:5000/api/forms", formData);
         alert("Form saved successfully!");
       }
-      
+
       navigate("/forms");
     } catch (err) {
       console.error(err);
@@ -222,10 +218,11 @@ export default function FormBuilder() {
   };
 
   const currentTheme = themes.find(t => t.id === formTheme) || themes[0];
+  const showSidebar = activeTab !== 'preview';
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <FormHeader 
+      <FormHeader
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onSave={saveForm}
@@ -234,115 +231,117 @@ export default function FormBuilder() {
       />
 
       <div className="flex pt-16">
-        <FormSidebar 
-          activeTab={activeTab}
-          onAddQuestion={addQuestion}
-          themes={themes}
-          formTheme={formTheme}
-          setFormTheme={setFormTheme}
-        />
+        {showSidebar && (
+          <FormSidebar
+            activeTab={activeTab}
+            onAddQuestion={addQuestion}
+            themes={themes}
+            formTheme={formTheme}
+            setFormTheme={setFormTheme}
+          />
+        )}
 
-        {/* Main Content */}
-        <main className="ml-64 flex-1 p-6 max-w-4xl mx-auto">
-          {activeTab === 'preview' ? (
-            <FormPreview 
-              title={title}
-              description={description}
-              questions={questions}
-              currentTheme={currentTheme}
-            />
-          ) : (
-            /* Build/Design Mode */
-            <>
-              {/* Form Title */}
-              <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="text-3xl font-bold w-full focus:outline-none border-b border-gray-200 pb-2 mb-3"
-                  placeholder="Form Title"
-                />
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full focus:outline-none text-gray-600 resize-none"
-                  placeholder="Form description"
-                  rows="2"
-                />
-              </div>
+        <main className={`${showSidebar ? 'md:ml-64' : ''} flex-1 p-4 sm:p-6 w-full`}>
+          <div className="max-w-4xl mx-auto">
+            {activeTab === 'preview' ? (
+              <FormPreview
+                title={title}
+                description={description}
+                questions={questions}
+                currentTheme={currentTheme}
+              />
+            ) : (
+              <>
+                <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-200">
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="text-2xl sm:text-3xl font-bold w-full focus:outline-none border-b border-gray-200 pb-2 mb-3"
+                    placeholder="Form Title"
+                  />
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full focus:outline-none text-gray-600 resize-none text-sm sm:text-base"
+                    placeholder="Form description"
+                    rows="2"
+                  />
+                </div>
 
-              {/* Questions */}
-              <div className="space-y-4">
-                {questions.map((question, index) => {
-                  const Component = COMPONENTS[question.type];
-                  return (
-                    <div key={question.id} className="relative group">
-                      <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                        <button
-                          onClick={() => moveQuestion(index, "up")}
-                          className="p-2 bg-white border border-gray-300 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition duration-200"
-                          disabled={index === 0}
-                        >
-                          <ArrowUp size={14} />
-                        </button>
-                        <button
-                          onClick={() => moveQuestion(index, "down")}
-                          className="p-2 bg-white border border-gray-300 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition duration-200"
-                          disabled={index === questions.length - 1}
-                        >
-                          <ArrowDown size={14} />
-                        </button>
-                        <button
-                          onClick={() => deleteQuestion(question.id)}
-                          className="p-2 bg-white border border-gray-300 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition duration-200"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                <div className="space-y-4">
+                  {questions.map((question, index) => {
+                    const Component = COMPONENTS[question.type];
+                    return (
+                      <div key={question.id} className="relative group">
+                        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 flex gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 z-10">
+                          <button
+                            onClick={() => moveQuestion(index, "up")}
+                            className="p-1.5 sm:p-2 bg-white border border-gray-300 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition duration-200"
+                            disabled={index === 0}
+                          >
+                            <ArrowUp size={14} />
+                          </button>
+                          <button
+                            onClick={() => moveQuestion(index, "down")}
+                            className="p-1.5 sm:p-2 bg-white border border-gray-300 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition duration-200"
+                            disabled={index === questions.length - 1}
+                          >
+                            <ArrowDown size={14} />
+                          </button>
+                          <button
+                            onClick={() => deleteQuestion(question.id)}
+                            className="p-1.5 sm:p-2 bg-white border border-gray-300 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition duration-200"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+
+                        {Component && (
+                          <Component
+                            question={question}
+                            onChange={(updated) => updateQuestion(question.id, updated)}
+                          />
+                        )}
                       </div>
+                    );
+                  })}
+                </div>
 
-                      {Component && (
-                        <Component
-                          question={question}
-                          onChange={(updated) => updateQuestion(question.id, updated)}
-                        />
-                      )}
+                {questions.length === 0 && (
+                  <div className="text-center py-12 sm:py-16">
+                    <div className="text-gray-400 mb-4">
+                      <List size={48} className="mx-auto" />
                     </div>
-                  );
-                })}
-              </div>
-
-              {/* Empty State */}
-              {questions.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="text-gray-400 mb-4">
-                    <List size={48} className="mx-auto" />
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">
+                      No questions yet
+                    </h3>
+                    <p className="text-sm sm:text-base text-gray-500 mb-6">
+                      Start by adding a question from the sidebar
+                    </p>
+                    <button
+                      onClick={() => addQuestion("mcq")}
+                      className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition duration-200 text-sm sm:text-base"
+                    >
+                      <PlusCircle size={18} />
+                      Add Your First Question
+                    </button>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-600 mb-2">No questions yet</h3>
-                  <p className="text-gray-500 mb-6">Start by adding a question from the sidebar</p>
-                  <button
-                    onClick={() => addQuestion("mcq")}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition duration-200"
-                  >
-                    <PlusCircle size={18} />
-                    Add Your First Question
-                  </button>
-                </div>
-              )}
+                )}
 
-              {/* Action Buttons */}
-              {questions.length > 0 && (
-                <div className="flex justify-center gap-4 mt-8 pb-10">
-                  <button
-                    onClick={() => addQuestion("mcq")}
-                    className="flex items-center gap-2 px-6 py-3 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition duration-200"
-                  >
-                    <PlusCircle size={18} /> Add Question
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+                {questions.length > 0 && (
+                  <div className="flex justify-center gap-4 mt-6 sm:mt-8 pb-10">
+                    <button
+                      onClick={() => addQuestion("mcq")}
+                      className="flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition duration-200 text-sm sm:text-base"
+                    >
+                      <PlusCircle size={18} /> Add Question
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </main>
       </div>
     </div>

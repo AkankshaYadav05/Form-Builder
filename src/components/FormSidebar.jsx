@@ -1,70 +1,126 @@
-import React from 'react';
-import { 
-  CheckSquare, Type, List, Star, ChevronDown, Upload, 
-  Calendar, Clock 
+import { useState } from 'react';
+import {
+  CheckSquare,
+  FileText,
+  Star,
+  CheckCircle,
+  Upload,
+  Grid3x3,
+  Type,
+  ChevronDown,
+  Calendar,
+  Clock,
+  Palette,
+  PlusCircle,
+  X
 } from 'lucide-react';
-import SidebarBtn from './SidebarBtn';
 
-function FormSidebar({ activeTab, onAddQuestion, themes, formTheme, setFormTheme }) {
+export default function FormSidebar({ activeTab, onAddQuestion, themes, formTheme, setFormTheme }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const questionTypes = [
-    { key: 'mcq', label: 'Multiple Choice', icon: <CheckSquare size={16} /> },
-    { key: 'short', label: 'Short Answer', icon: <Type size={16} /> },
-    { key: 'long', label: 'Long Answer', icon: <List size={16} /> },
-    { key: 'rating', label: 'Rating', icon: <Star size={16} /> },
-    { key: 'checkbox', label: 'Checkbox', icon: <CheckSquare size={16} /> },
-    { key: 'dropdown', label: 'Dropdown', icon: <ChevronDown size={16} /> },
-    { key: 'file', label: 'File Upload', icon: <Upload size={16} /> },
-    { key: 'date', label: 'Date', icon: <Calendar size={16} /> },
-    { key: 'time', label: 'Time', icon: <Clock size={16} /> },
-    { key: 'categorize', label: 'Categorize', icon: <List size={16} /> },
+    { type: 'mcq', icon: CheckSquare, label: 'Multiple Choice' },
+    { type: 'short', icon: Type, label: 'Short Answer' },
+    { type: 'long', icon: FileText, label: 'Long Answer' },
+    { type: 'rating', icon: Star, label: 'Rating' },
+    { type: 'checkbox', icon: CheckCircle, label: 'Checkbox' },
+    { type: 'dropdown', icon: ChevronDown, label: 'Dropdown' },
+    { type: 'file', icon: Upload, label: 'File Upload' },
+    { type: 'categorize', icon: Grid3x3, label: 'Categorize' },
+    { type: 'date', icon: Calendar, label: 'Date' },
+    { type: 'time', icon: Clock, label: 'Time' },
   ];
 
   return (
-    <aside className="fixed top-16 left-0 w-64 h-[calc(100vh-4rem)] bg-white border-r border-gray-200 overflow-y-auto">
-      {activeTab === 'build' && (
-        <div className="p-4">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Add Question</h2>
-          <div className="space-y-2">
-            {questionTypes.map((type) => (
-              <SidebarBtn
-                key={type.key}
-                icon={type.icon}
-                label={type.label}
-                onClick={() => onAddQuestion(type.key)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+    <>
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="md:hidden fixed bottom-6 right-6 z-40 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition"
+        aria-label="Open sidebar"
+      >
+        <PlusCircle size={24} />
+      </button>
 
-      {activeTab === 'design' && (
-        <div className="p-4">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Form Theme</h2>
-          <div className="space-y-3">
-            {themes.map((theme) => (
-              <button
-                key={theme.id}
-                onClick={() => setFormTheme(theme.id)}
-                className={`w-full p-3 rounded-lg border-2 transition duration-200 ${
-                  formTheme === theme.id 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-6 h-6 rounded-full"
-                    style={{ backgroundColor: theme.colors.primary }}
-                  ></div>
-                  <span className="font-medium text-gray-800">{theme.name}</span>
+      <aside
+        className={`fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-gray-200 overflow-y-auto z-20 transition-transform duration-300 md:translate-x-0 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden absolute top-4 right-4 p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+          aria-label="Close sidebar"
+        >
+          <X size={20} />
+        </button>
+
+        <div className="p-4 space-y-6">
+          {activeTab === 'build' && (
+            <>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <PlusCircle size={16} />
+                  Add Questions
+                </h3>
+                <div className="space-y-2">
+                  {questionTypes.map(({ type, icon: Icon, label }) => (
+                    <button
+                      key={type}
+                      onClick={() => {
+                        onAddQuestion(type);
+                        setMobileOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition duration-200 border border-transparent hover:border-blue-200"
+                    >
+                      <Icon size={18} />
+                      {label}
+                    </button>
+                  ))}
                 </div>
-              </button>
-            ))}
-          </div>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <Palette size={16} />
+                  Form Theme
+                </h3>
+                <div className="space-y-2">
+                  {themes.map((theme) => (
+                    <button
+                      key={theme.id}
+                      onClick={() => setFormTheme(theme.id)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition duration-200 border ${
+                        formTheme === theme.id
+                          ? 'bg-blue-50 text-blue-600 border-blue-200'
+                          : 'text-gray-700 hover:bg-gray-50 border-transparent'
+                      }`}
+                    >
+                      <div
+                        className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                        style={{ backgroundColor: theme.colors.primary }}
+                      />
+                      {theme.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'preview' && (
+            <div className="text-center text-gray-500 text-sm py-8">
+              Preview mode active
+            </div>
+          )}
         </div>
+      </aside>
+
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden fixed inset-0 bg-black/30 z-10"
+        />
       )}
-    </aside>
+    </>
   );
 }
-
-export default FormSidebar;

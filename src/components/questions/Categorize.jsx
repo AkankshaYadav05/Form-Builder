@@ -47,35 +47,35 @@ function Categorize({ question, onChange }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 sm:p-6">
       <div className="mb-4">
         <input
           type="text"
           value={question.text}
           onChange={(e) => updateText(e.target.value)}
-          className="text-lg font-medium w-full focus:outline-none border-b border-gray-200 pb-2"
+          className="text-base sm:text-lg font-medium w-full focus:outline-none border-b border-gray-200 pb-2"
           placeholder="Enter your categorize question"
         />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Categories */}
         <div>
           <h4 className="font-medium text-gray-700 mb-3">Categories</h4>
-          <div className="space-y-3 mb-4">
+          <div className="space-y-2 sm:space-y-3 mb-4">
             {question.categories.map((category, index) => (
-              <div key={index} className="flex items-center gap-3">
+              <div key={index} className="flex items-center gap-2 sm:gap-3">
                 <input
                   type="text"
                   value={category}
                   onChange={(e) => updateCategory(index, e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   placeholder={`Category ${index + 1}`}
                 />
                 {question.categories.length > 1 && (
                   <button
                     onClick={() => removeCategory(index)}
-                    className="text-red-500 hover:text-red-700 p-1"
+                    className="flex-shrink-0 text-red-500 hover:text-red-700 p-1"
                   >
                     <X size={16} />
                   </button>
@@ -95,20 +95,20 @@ function Categorize({ question, onChange }) {
         {/* Items */}
         <div>
           <h4 className="font-medium text-gray-700 mb-3">Items to Categorize</h4>
-          <div className="space-y-3 mb-4">
+          <div className="space-y-2 sm:space-y-3 mb-4">
             {question.items.map((item, index) => (
-              <div key={index} className="flex items-center gap-3">
+              <div key={index} className="flex items-center gap-2 sm:gap-3">
                 <input
                   type="text"
                   value={item}
                   onChange={(e) => updateItem(index, e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   placeholder={`Item ${index + 1}`}
                 />
                 {question.items.length > 1 && (
                   <button
                     onClick={() => removeItem(index)}
-                    className="text-red-500 hover:text-red-700 p-1"
+                    className="flex-shrink-0 text-red-500 hover:text-red-700 p-1"
                   >
                     <X size={16} />
                   </button>

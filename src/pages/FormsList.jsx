@@ -1,19 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Plus, Edit3, Trash2, Eye, Calendar, Share2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Plus,
+  CreditCard as Edit3,
+  Trash2,
+  Eye,
+  Calendar,
+  Share2,
+  FileText,
+} from 'lucide-react';
 import StatsCard from '../components/StatsCard';
 import ShareModal from '../components/ShareModal';
 import DeleteModal from '../components/DeleteModal';
+import AuthForm from '../components/AuthForm';
 
 function FormsList() {
   const navigate = useNavigate();
   const [forms, setForms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(null);
   const [shareModal, setShareModal] = useState({ isOpen: false, formId: null, formTitle: '' });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, form: null });
   const [isDeleting, setIsDeleting] = useState(false);
-  const [message, setMessage] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  // Auth-related state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
 
   useEffect(() => {
     loadForms();
@@ -22,11 +37,13 @@ function FormsList() {
   const loadForms = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/forms');
-      setForms(response.data);
+      axios.defaults.baseURL = 'http://localhost:5000';
+      const response = await axios.get('/api/forms');
+      setForms(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error loading forms:', error);
       setMessage({ type: 'error', text: 'Failed to load forms. Please try again.' });
+      setForms([]);
     } finally {
       setLoading(false);
     }
@@ -35,9 +52,8 @@ function FormsList() {
   const deleteForm = async (formId) => {
     setIsDeleting(true);
     try {
-      await axios.delete(`http://localhost:5000/api/forms/${formId}`);
-      setForms(forms.filter(form => form._id !== formId));
-      
+      await axios.delete(`/api/forms/${formId}`);
+      setForms(forms.filter((form) => form._id !== formId));
       setMessage({ type: 'success', text: 'Form deleted successfully!' });
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
@@ -50,10 +66,11 @@ function FormsList() {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -68,7 +85,7 @@ function FormsList() {
       file: '📎',
       date: '📅',
       time: '🕐',
-      categorize: '🗂️'
+      categorize: '🗂️',
     };
     return icons[type] || '❓';
   };
@@ -77,8 +94,29 @@ function FormsList() {
     <div className="bg-gray-50 min-h-screen">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-8xl mx-6 px-6 py-4">
-          <div className="flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          {/* Mobile */}
+          <div className="flex items-center justify-between sm:hidden">
+            <button
+              onClick={() => navigate('/')}
+              className="p-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition duration-200"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div className="text-center flex-1">
+              <h1 className="text-lg font-bold text-gray-800">My Forms</h1>
+              <p className="text-gray-600 text-xs">Manage and organize</p>
+            </div>
+            <button
+              onClick={() => () => navigate('/editor')}
+              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm text-xs font-medium"
+            >
+              + New
+            </button>
+          </div>
+
+          {/* Desktop */}
+          <div className="hidden sm:flex justify-between items-center">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/')}
@@ -87,15 +125,15 @@ function FormsList() {
                 <ArrowLeft size={16} /> Back to Home
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">My Forms</h1>
-                <p className="text-gray-600 text-sm">Manage and organize your forms</p>
+                <h1 className="text-3xl font-bold text-gray-800">My Forms</h1>
+                <p className="text-gray-600 mt-1">Manage and organize your forms</p>
               </div>
             </div>
             <button
               onClick={() => navigate('/editor')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm"
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm font-medium"
             >
-              <Plus size={16} /> Create New Form
+              <Plus size={18} /> Create New Form
             </button>
           </div>
         </div>
@@ -112,10 +150,7 @@ function FormsList() {
             }`}
           >
             <span>{message.text}</span>
-            <button
-              onClick={() => setMessage(null)}
-              className="text-xl font-bold hover:opacity-70"
-            >
+            <button onClick={() => setMessage(null)} className="text-xl font-bold hover:opacity-70">
               ×
             </button>
           </div>
@@ -131,33 +166,20 @@ function FormsList() {
           </div>
         ) : forms.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-gray-400 mb-6">
-              <Edit3 size={64} className="mx-auto" />
-            </div>
+            <FileText size={64} className="mx-auto text-gray-400 mb-6" />
             <h3 className="text-2xl font-semibold text-gray-600 mb-4">No forms yet</h3>
             <p className="text-gray-500 mb-8 max-w-md mx-auto">
               Get started by creating your first form. Choose from our templates or start from scratch.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={() => navigate('/editor')}
+                onClick={() => () => navigate('/editor')}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition duration-200"
               >
-                <Plus size={18} />
-                Create Your First Form
+                <Plus size={18} /> Create Your First Form
               </button>
               <button
-                onClick={() => {
-                  const element = document.getElementById("templates");
-                  if (element) {
-                    navigate('/');
-                    setTimeout(() => {
-                      document.getElementById("templates")?.scrollIntoView({ behavior: "smooth" });
-                    }, 100);
-                  } else {
-                    navigate('/');
-                  }
-                }}
+                onClick={() => navigate('/')}
                 className="inline-flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition duration-200"
               >
                 Browse Templates
@@ -168,71 +190,74 @@ function FormsList() {
           <>
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <StatsCard 
-                icon={<Edit3 className="w-6 h-6" />}
-                title="Total Forms"
-                value={forms.length}
-                color="blue"
-              />
-              <StatsCard 
-                icon={<Calendar className="w-6 h-6" />}
+              <StatsCard icon={FileText} title="Total Forms" value={forms.length} subtitle="All forms" color="blue" />
+              <StatsCard
+                icon={Edit3}
                 title="Total Questions"
                 value={forms.reduce((total, form) => total + (form.questions?.length || 0), 0)}
+                subtitle="Across all forms"
                 color="green"
               />
-              <StatsCard 
-                icon={<Plus className="w-6 h-6" />}
+              <StatsCard
+                icon={Calendar}
                 title="This Month"
-                value={forms.filter(form => {
+                value={forms.filter((form) => {
+                  if (!form.createdAt) return false;
                   const formDate = new Date(form.createdAt);
                   const now = new Date();
                   return formDate.getMonth() === now.getMonth() && formDate.getFullYear() === now.getFullYear();
                 }).length}
+                subtitle="Forms created"
                 color="purple"
               />
             </div>
 
             {/* Forms Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {forms.map((form) => (
                 <div
-                  key={form.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition duration-200 overflow-hidden"
+                  key={form._id || form.id}
+                  className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 overflow-hidden"
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <h3 className="text-lg font-semibold text-gray-800 truncate flex-1 mr-2">
-                        {form.title}
+                        {form.title || 'Untitled Form'}
                       </h3>
                       <div className="flex gap-1">
                         <button
-                          onClick={() => navigate(`/editor?edit=${form._id}`)}
-                          className="p-2 text-blue-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200"
+                          onClick={() =>navigate(`/editor?edit=${form._id}`)
+                          }
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200"
                           title="Edit form"
                         >
                           <Edit3 size={16} />
                         </button>
                         <button
-                          onClick={() => setShareModal({ isOpen: true, formId: form._id, formTitle: form.title })}
-                          className="p-2 text-green-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition duration-200"
+                          onClick={() =>
+                              setShareModal({ isOpen: true, formId: form._id, formTitle: form.title })
+                            }
+                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200"
                           title="Share form"
                         >
                           <Share2 size={16} />
                         </button>
                         <button
-                          onClick={() => setDeleteModal({ isOpen: true, form })}
-                          className="p-2 text-red-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition duration-200"
+                          onClick={() =>
+                            setDeleteModal({ isOpen: true, form })
+                          }
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition duration-200"
                           title="Delete form"
                         >
                           <Trash2 size={16} />
                         </button>
                       </div>
                     </div>
-                    
+
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {form.description}
+                      {form.description || 'No description provided'}
                     </p>
-                    
+
                     <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
                       <Calendar size={14} />
                       <span>Created {formatDate(form.createdAt)}</span>
@@ -265,7 +290,8 @@ function FormsList() {
 
                     <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                       <button
-                        onClick={() => navigate(`/editor?edit=${form._id}`)}
+                        onClick={() =>navigate(`/editor?edit=${form._id}`)
+                          }
                         className="flex items-center gap-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200 text-sm font-medium"
                       >
                         <Edit3 size={14} />
@@ -277,7 +303,7 @@ function FormsList() {
                         title="View responses"
                       >
                         <Eye size={14} />
-                        View Responses
+                        Responses
                       </button>
                     </div>
                   </div>
@@ -303,6 +329,28 @@ function FormsList() {
         formTitle={deleteModal.form?.title}
         isDeleting={isDeleting}
       />
+
+      {authOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-xl w-full max-w-md p-4 sm:p-6 relative shadow-xl">
+            <button
+              onClick={() => setAuthOpen(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+            <AuthForm
+              type="login"
+              onSuccess={() => {
+                setIsLoggedIn(true);
+                setAuthOpen(false);
+                if (pendingAction) pendingAction();
+              }}
+              onTypeChange={() => {}}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

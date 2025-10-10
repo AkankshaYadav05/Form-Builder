@@ -1,27 +1,22 @@
-import mongoose from 'mongoose';
+// models/response.js
+import mongoose from "mongoose";
 
-// Answer schema for individual question responses
 const AnswerSchema = new mongoose.Schema({
-  questionId: { type: String, required: true }, 
-  questionText: { type: String, required: true },
-  questionType: { type: String, required: true },
+  questionId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  subQuestionId: { type: mongoose.Schema.Types.ObjectId},
+  question: { type: String, required: true }, // actual question text
   answer: { type: mongoose.Schema.Types.Mixed },
-  isCorrect: { type: Boolean, default: false }
 });
 
-// Response schema
 const ResponseSchema = new mongoose.Schema({
   formId: { type: mongoose.Schema.Types.ObjectId, ref: "Form", required: true },
   answers: [AnswerSchema],
-  score: { type: Number, default: 0 },
   submittedAt: { type: Date, default: Date.now },
   submitterInfo: {
     ip: String,
     userAgent: String,
     sessionId: String
   }
-}, {
-  timestamps: true
-});
+}, { timestamps: true });
 
 export default mongoose.model("Response", ResponseSchema);

@@ -1,4 +1,4 @@
-export const requireAuth = (req, res, next) => {
+export const isAuth = (req, res, next) => {
   if (!req.session.userId) {
     return res.status(401).json({ msg: "Unauthorized" });
   }

@@ -6,60 +6,37 @@ import mongoose from "mongoose";
 const router = express.Router();
 
 // POST /api/submit - General submit endpoint
-router.post("/submit", async (req, res) => {
+router.post('/submit', async (req, res) => {
   try {
     const { formId, answers } = req.body;
-    
-    if (!mongoose.Types.ObjectId.isValid(formId)) {
-      return res.status(400).json({ message: "Invalid form ID" });
+
+    if (!formId || !answers || !Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({ message: 'Invalid form submission' });
     }
 
-    const form = await Form.findById(formId);
-    if (!form) {
-      return res.status(404).json({ message: "Form not found" });
-    }
-
-    if (!answers || !Array.isArray(answers)) {
-      return res.status(400).json({ message: "Answers must be an array" });
-    }
-
-    // Process answers
-    const processedAnswers = answers.map(userAnswer => {
-      const question = form.questions.find(q => q.id === userAnswer.questionId);
-      
-      return {
-        questionId: userAnswer.questionId,
-        questionText: question ? question.text : "Question not found",
-        questionType: question ? question.type : "unknown",
-        answer: userAnswer.answer,
-        isCorrect: false // Can be enhanced with scoring logic
-      };
+    // Validate each answer
+    answers.forEach(a => {
+      if (!a.questionId || !a.subQuestionId || !a.question) {
+        throw new Error('Answer validation failed');
+      }
     });
 
     const response = new Response({
       formId,
-      answers: processedAnswers,
-      score: 0, // Can be calculated based on correct answers
-      submittedAt: new Date(),
+      answers,
       submitterInfo: {
         ip: req.ip,
-        userAgent: req.get('User-Agent')
+        userAgent: req.headers['user-agent'],
+        sessionId: req.sessionID || null
       }
     });
 
     await response.save();
-    
-    res.status(201).json({ 
-      message: "Response saved successfully", 
-      response: {
-        _id: response._id,
-        submittedAt: response.submittedAt,
-        score: response.score
-      }
-    });
-  } catch (err) {
-    console.error("Submit response error:", err);
-    res.status(500).json({ message: err.message });
+
+    res.status(201).json({ message: 'Response submitted successfully' });
+  } catch (error) {
+    console.error('Error saving response:', error.message);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });
 

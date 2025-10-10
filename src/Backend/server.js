@@ -4,12 +4,14 @@ import cors from "cors";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import MongoStore from "connect-mongo";
+import multer from "multer";
 
 import userRoutes from "./routes/users.js";
 import formRoutes from "./routes/FormRoutes.js";
 import responseRoutes from "./routes/responses.js";
 
 const app = express();
+import path from "path";
 
 // ===== CORS =====
 app.use(cors({
@@ -18,6 +20,31 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, 'uploads')); // save in uploads folder
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname); // you can use unique names if needed
+  }
+});
+
+const upload = multer({ storage });
+
+// Endpoint to handle file uploads
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+  // Return the path so frontend can store it in DB
+  res.json({ filePath: `/uploads/${req.file.filename}` });
+});
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
 
 // ===== Middleware =====
 app.use(express.json());
@@ -42,6 +69,9 @@ app.use(session({
 app.use("/api/users", userRoutes);
 app.use("/api/forms", formRoutes);
 app.use("/api/responses", responseRoutes);
+
+
+
 
 // ===== Test Route =====
 app.get("/api/test", (req, res) => {
