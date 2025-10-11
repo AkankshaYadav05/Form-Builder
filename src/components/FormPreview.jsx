@@ -200,17 +200,6 @@ export default function FormPreview({ title, description, questions, currentThem
           ))}
         </div>
 
-        {questions.length > 0 && (
-          <div className="mt-8 flex justify-center sm:justify-start">
-            <button
-              type="submit"
-              className="w-full sm:w-auto px-8 py-3 text-white rounded-lg font-medium hover:opacity-90 transition text-sm sm:text-base"
-              style={{ backgroundColor: currentTheme.colors.primary }}
-            >
-              Submit Form
-            </button>
-          </div>
-        )}
       </form>
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { QuestionRenderer } from '../components/QuestionTypes';
+import { QuestionRenderer } from '../components/QuestionRenderer';
 import { LoadingScreen, SuccessScreen, FormHeader, SubmitButton } from '../components/FormScreens';
 
 export default function FillForm() {
@@ -74,7 +74,6 @@ export default function FillForm() {
 
       setIsSubmitting(false);
       setShowSuccess(true);
-      setTimeout(() => navigate('/forms'), 2000);
     } catch (error) {
       console.error('Error submitting form:', error);
       setIsSubmitting(false);

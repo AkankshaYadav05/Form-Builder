@@ -14,7 +14,6 @@ import {
 import StatsCard from '../components/StatsCard';
 import ShareModal from '../components/ShareModal';
 import DeleteModal from '../components/DeleteModal';
-import AuthForm from '../components/AuthForm';
 
 function FormsList() {
   const navigate = useNavigate();
@@ -24,11 +23,6 @@ function FormsList() {
   const [shareModal, setShareModal] = useState({ isOpen: false, formId: null, formTitle: '' });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, form: null });
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Auth-related state
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState(null);
 
   useEffect(() => {
     loadForms();
@@ -108,7 +102,7 @@ function FormsList() {
               <p className="text-gray-600 text-xs">Manage and organize</p>
             </div>
             <button
-              onClick={() => () => navigate('/editor')}
+              onClick={() => navigate('/editor')}
               className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm text-xs font-medium"
             >
               + New
@@ -173,7 +167,7 @@ function FormsList() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={() => () => navigate('/editor')}
+                onClick={() => navigate('/editor')}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition duration-200"
               >
                 <Plus size={18} /> Create Your First Form
@@ -226,8 +220,7 @@ function FormsList() {
                       </h3>
                       <div className="flex gap-1">
                         <button
-                          onClick={() =>navigate(`/editor?edit=${form._id}`)
-                          }
+                          onClick={() => navigate(`/editor?edit=${form._id}`)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200"
                           title="Edit form"
                         >
@@ -235,8 +228,8 @@ function FormsList() {
                         </button>
                         <button
                           onClick={() =>
-                              setShareModal({ isOpen: true, formId: form._id, formTitle: form.title })
-                            }
+                            setShareModal({ isOpen: true, formId: form._id, formTitle: form.title })
+                          }
                           className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200"
                           title="Share form"
                         >
@@ -290,8 +283,7 @@ function FormsList() {
 
                     <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                       <button
-                        onClick={() =>navigate(`/editor?edit=${form._id}`)
-                          }
+                        onClick={() => navigate(`/editor?edit=${form._id}`)}
                         className="flex items-center gap-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200 text-sm font-medium"
                       >
                         <Edit3 size={14} />
@@ -329,28 +321,6 @@ function FormsList() {
         formTitle={deleteModal.form?.title}
         isDeleting={isDeleting}
       />
-
-      {authOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-xl w-full max-w-md p-4 sm:p-6 relative shadow-xl">
-            <button
-              onClick={() => setAuthOpen(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-            <AuthForm
-              type="login"
-              onSuccess={() => {
-                setIsLoggedIn(true);
-                setAuthOpen(false);
-                if (pendingAction) pendingAction();
-              }}
-              onTypeChange={() => {}}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

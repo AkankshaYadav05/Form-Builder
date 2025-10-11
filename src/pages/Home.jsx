@@ -1,26 +1,22 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AuthForm from '../components/AuthForm';
-import axios from 'axios';
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../components/AuthContext";
+import AuthForm from "../components/AuthForm";
+import axios from "axios";
 
 import {
-  MousePointer,
-  Smartphone,
-  Users,
-  Shield,
-  Brain,
-  Menu,
-  X,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react';
+  MousePointer, Smartphone, Users, Shield, Brain,
+  Menu, X, ChevronLeft, ChevronRight
+} from "lucide-react";
 
-function Home() {
+axios.defaults.withCredentials = true;
+
+export function Home() {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [auth, setAuth] = useState(null);
+  const { auth, setAuth } = useContext(AuthContext);
   const [showAuth, setShowAuth] = useState(false);
   const [authType, setAuthType] = useState("login");
+  const [open, setOpen] = useState(false);
 
   const handleAuthSuccess = (username) => {
     setAuth(username);
@@ -29,134 +25,77 @@ function Home() {
 
   const handleLogout = async () => {
     try {
-      await axios.post(
-        "http://localhost:5000/api/users/logout",
-        {},
-        { withCredentials: true }
-      );
+      await axios.post("http://localhost:5000/api/users/logout");
       setAuth(null);
-      setShowAuth(false);
     } catch (err) {
-      console.error("Logout failed:", err);
+      console.error("Logout failed", err);
     }
   };
 
-  const features = [
-    {
-      title: "Drag & Drop Builder",
-      desc: "Easily create forms with our intuitive drag-and-drop interface. No coding required.",
-      icon: <MousePointer className="text-blue-500" size={32} />
-    },
-    {
-      title: "Responsive Design",
-      desc: "Your forms look and function flawlessly across all devices.",
-      icon: <Smartphone className="text-green-500" size={32} />
-    },
-    {
-      title: "Collaboration Tools",
-      desc: "Work together with your team on form projects, with real-time editing.",
-      icon: <Users className="text-purple-500" size={32} />
-    },
-    {
-      title: "Security & Compliance",
-      desc: "Protect sensitive data with robust security and compliance standards.",
-      icon: <Shield className="text-red-500" size={32} />
-    },
-    {
-      title: "AI Suggestions",
-      desc: "Get smart recommendations for questions, layouts, and validations.",
-      icon: <Brain className="text-orange-500" size={32} />
-    },
-  ];
-
-  const templates = [
-    {
-      id: "event",
-      title: "Event Registration",
-      img: "https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=400",
-    },
-    {
-      id: "feedback",
-      title: "Customer Feedback",
-      img: "https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&cs=tinysrgb&w=400",
-    },
-    {
-      id: "job",
-      title: "Job Application",
-      img: "https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400",
-    },
-    {
-      id: "contact",
-      title: "Contact Form",
-      img: "https://images.pexels.com/photos/262508/pexels-photo-262508.jpeg?auto=compress&cs=tinysrgb&w=400",
-    },
-    {
-      id: "quiz",
-      title: "Quiz / Survey",
-      img: "https://images.pexels.com/photos/301920/pexels-photo-301920.jpeg?auto=compress&cs=tinysrgb&w=400",
-    },
-  ];
+  const handleProtectedNavigate = (path) => {
+    if (!auth) {
+      setShowAuth(true);
+      setAuthType("login");
+      return;
+    }
+    navigate(path);
+  };
 
   const scrollToTemplates = () => {
-    const element = document.getElementById("templates");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
+    const el = document.getElementById("templates");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
     setOpen(false);
   };
 
+  const features = [
+    { title: "Drag & Drop Builder", desc: "Easily create forms with drag-and-drop.", icon: <MousePointer className="text-blue-500" size={32} /> },
+    { title: "Responsive Design", desc: "Forms look perfect on any device.", icon: <Smartphone className="text-green-500" size={32} /> },
+    { title: "Collaboration Tools", desc: "Work together in real-time.", icon: <Users className="text-purple-500" size={32} /> },
+    { title: "Security & Compliance", desc: "Keep your data safe.", icon: <Shield className="text-red-500" size={32} /> },
+    { title: "AI Suggestions", desc: "Smart recommendations for questions and layouts.", icon: <Brain className="text-orange-500" size={32} /> },
+  ];
+
+  const templates = [
+    { id: "event", title: "Event Registration", img: "https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=400" },
+    { id: "feedback", title: "Customer Feedback", img: "https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&cs=tinysrgb&w=400" },
+    { id: "job", title: "Job Application", img: "https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=400" },
+    { id: "contact", title: "Contact Form", img: "https://images.pexels.com/photos/262508/pexels-photo-262508.jpeg?auto=compress&cs=tinysrgb&w=400" },
+    { id: "registration", title: "Form Registration", img: "https://images.pexels.com/photos/7821682/pexels-photo-7821682.jpeg?auto=compress&cs=tinysrgb&w=400" },
+    { id: "quiz", title: "Survey Form", img: "https://images.pexels.com/photos/301920/pexels-photo-301920.jpeg?auto=compress&cs=tinysrgb&w=400" },
+  ];
+
+
   return (
     <div className="bg-gray-50 min-h-screen">
+      {/* ===== Navbar ===== */}
       <nav className="px-4 sm:px-6 md:px-10 py-4 border-b bg-white shadow-sm sticky top-0 z-20">
         <div className="flex justify-between items-center">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800">FormBuilder</h1>
 
-          <button
-            className="md:hidden text-2xl p-2 hover:bg-gray-100 rounded-lg transition"
-            onClick={() => setOpen(!open)}
-            aria-label="Toggle menu"
-          >
+          <button className="md:hidden text-2xl p-2 hover:bg-gray-100 rounded-lg transition" onClick={() => setOpen(!open)}>
             {open ? <X size={24} /> : <Menu size={24} />}
           </button>
 
           <div className="hidden md:flex items-center gap-4 lg:gap-6">
-            <button
-              onClick={scrollToTemplates}
-              className="text-gray-700 hover:text-blue-600 transition duration-200 text-sm lg:text-base"
-            >
-              Templates
-            </button>
-            <button
-              onClick={() => navigate("/forms")}
-              className="text-gray-700 hover:text-blue-600 transition duration-200 text-sm lg:text-base"
-            >
-              My Forms
-            </button>
-            <button
-              onClick={() => navigate("/editor")}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 lg:px-4 py-2 rounded-xl font-medium shadow-sm transition duration-200 transform hover:scale-105 text-sm lg:text-base"
-            >
-              Create Forms
-            </button>
+            <button onClick={scrollToTemplates} className="text-gray-700 hover:text-blue-600 transition duration-200 text-sm lg:text-base">Templates</button>
+            <button onClick={() => handleProtectedNavigate("/forms")} className="text-gray-700 hover:text-blue-600 transition duration-200 text-sm lg:text-base">My Forms</button>
+            <button onClick={() => handleProtectedNavigate("/editor")} className="bg-blue-600 hover:bg-blue-700 text-white px-3 lg:px-4 py-2 rounded-xl font-medium shadow-sm transition duration-200 transform hover:scale-105 text-sm lg:text-base">Create Forms</button>
 
             {!auth ? (
-              <button
-                onClick={() => { setShowAuth(true); setAuthType("login"); }}
-                className="text-gray-700 border border-gray-300 px-3 lg:px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200 text-sm lg:text-base"
-              >
-                Login / Sign Up
-              </button>
+              <button onClick={() => { setShowAuth(true); setAuthType("login"); }} className="text-gray-700 border border-gray-300 px-3 lg:px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200 text-sm lg:text-base">Login / Sign Up</button>
             ) : (
               <>
                 <span className="text-gray-700 text-sm lg:text-base max-w-[100px] truncate">
-                  Welcome, {auth}!
+                  <p className="text-gray-700 px-4 py-2 text-center bg-gray-50 rounded-xl flex items-center justify-center gap-2">
+                    <img
+                      src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full"
+                    />
+                    {auth}!
+                  </p>
                 </span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 lg:px-4 py-2 rounded-xl transition duration-200 text-sm lg:text-base"
-                >
-                  Logout
-                </button>
+                <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white px-3 lg:px-4 py-2 rounded-xl transition duration-200 text-sm lg:text-base">Logout</button>
               </>
             )}
           </div>
@@ -164,67 +103,43 @@ function Home() {
 
         {open && (
           <div className="mt-4 flex flex-col space-y-3 md:hidden bg-white border rounded-lg p-4 shadow-lg">
-            <button
-              onClick={scrollToTemplates}
-              className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100"
-            >
-              Templates
-            </button>
-            <button
-              onClick={() => { navigate("/forms"); setOpen(false); }}
-              className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100"
-            >
-              My Forms
-            </button>
-            <button
-              onClick={() => { navigate("/editor"); setOpen(false); }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium text-center shadow-sm transition duration-200"
-            >
-              Create Forms
-            </button>
+            <button onClick={scrollToTemplates} className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100">Templates</button>
+            <button onClick={() => { handleProtectedNavigate("/forms"); setOpen(false); }} className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100">My Forms</button>
+            <button onClick={() => { handleProtectedNavigate("/editor"); setOpen(false); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium text-center shadow-sm transition duration-200">Create Forms</button>
 
             {!auth ? (
-              <button
-                onClick={() => { setShowAuth(true); setAuthType("login"); setOpen(false); }}
-                className="text-gray-700 border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200 text-center"
-              >
-                Login / Sign Up
-              </button>
+              <button onClick={() => { setShowAuth(true); setAuthType("login"); setOpen(false); }} className="text-gray-700 border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200 text-center">Login / Sign Up</button>
             ) : (
               <div className="space-y-2 pt-2">
                 <p className="text-gray-700 px-4 py-2 text-center bg-gray-50 rounded-xl">
-                  Welcome, {auth}!
+                  <p className="text-gray-700 px-4 py-2 text-center bg-gray-50 rounded-xl flex items-center justify-center gap-2">
+                    <img
+                      src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full"
+                    />
+                    {auth}!
+                  </p>
                 </p>
-                <button
-                  onClick={() => { handleLogout(); setOpen(false); }}
-                  className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition duration-200"
-                >
-                  Logout
-                </button>
+                <button onClick={() => { handleLogout(); setOpen(false); }} className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition duration-200">Logout</button>
               </div>
             )}
           </div>
         )}
       </nav>
 
+      {/* ===== Auth Modal ===== */}
       {showAuth && !auth && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md relative">
-            <button
-              onClick={() => setShowAuth(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 p-1 hover:bg-gray-100 rounded-full transition"
-              aria-label="Close"
-            >
+            <button onClick={() => setShowAuth(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 p-1 hover:bg-gray-100 rounded-full transition" aria-label="Close">
               <X size={20} />
             </button>
-            <AuthForm
-              type={authType}
-              onSuccess={handleAuthSuccess}
-              onTypeChange={setAuthType}
-            />
+            <AuthForm type={authType} onSuccess={handleAuthSuccess} onTypeChange={setAuthType} />
           </div>
         </div>
       )}
+
 
       <section className="text-center px-4 sm:px-6 py-16 sm:py-20 md:py-24 bg-gradient-to-br from-blue-100 via-white to-purple-50">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 sm:mb-6 leading-tight px-2">

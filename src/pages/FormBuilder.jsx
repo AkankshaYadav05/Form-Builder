@@ -92,7 +92,21 @@ export default function FormBuilder() {
         { id: crypto.randomUUID(), type: "long", text: "Message" }
       ]
     },
-    quiz: {
+    
+    registration: {
+      title: "Registration Form",
+      description: "Register for an event or program",
+      questions: [
+        { id: crypto.randomUUID(), type: "short", text: "Full Name" },
+        { id: crypto.randomUUID(), type: "short", text: "Email" },
+        { id: crypto.randomUUID(), type: "short", text: "Phone Number" },
+        { id: crypto.randomUUID(), type: "dropdown", text: "Select Event", options: ["Workshop", "Seminar", "Webinar"] },
+        { id: crypto.randomUUID(), type: "date", text: "Preferred Date" },
+        { id: crypto.randomUUID(), type: "long", text: "Additional Comments" }
+      ]
+    },
+
+    survey: {
       title: "Knowledge Quiz",
       description: "Test your knowledge",
       questions: [
