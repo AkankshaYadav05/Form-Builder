@@ -64,15 +64,18 @@ export function Home() {
     { id: "quiz", title: "Survey Form", img: "https://images.pexels.com/photos/301920/pexels-photo-301920.jpeg?auto=compress&cs=tinysrgb&w=400" },
   ];
 
-
   return (
     <div className="bg-gray-50 min-h-screen">
+
       {/* ===== Navbar ===== */}
       <nav className="px-4 sm:px-6 md:px-10 py-4 border-b bg-white shadow-sm sticky top-0 z-20">
         <div className="flex justify-between items-center">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800">FormBuilder</h1>
 
-          <button className="md:hidden text-2xl p-2 hover:bg-gray-100 rounded-lg transition" onClick={() => setOpen(!open)}>
+          <button
+            className="md:hidden text-2xl p-2 hover:bg-gray-100 rounded-lg transition"
+            onClick={() => setOpen(!open)}
+          >
             {open ? <X size={24} /> : <Menu size={24} />}
           </button>
 
@@ -82,7 +85,12 @@ export function Home() {
             <button onClick={() => handleProtectedNavigate("/editor")} className="bg-blue-600 hover:bg-blue-700 text-white px-3 lg:px-4 py-2 rounded-xl font-medium shadow-sm transition duration-200 transform hover:scale-105 text-sm lg:text-base">Create Forms</button>
 
             {!auth ? (
-              <button onClick={() => { setShowAuth(true); setAuthType("login"); }} className="text-gray-700 border border-gray-300 px-3 lg:px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200 text-sm lg:text-base">Login / Sign Up</button>
+              <button
+                onClick={() => { setShowAuth(true); setAuthType("login"); }}
+                className="text-gray-700 border border-gray-300 px-3 lg:px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200 text-sm lg:text-base"
+              >
+                Login / Sign Up
+              </button>
             ) : (
               <>
                 <span className="text-gray-700 text-sm lg:text-base max-w-[100px] truncate">
@@ -95,7 +103,12 @@ export function Home() {
                     {auth}!
                   </p>
                 </span>
-                <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white px-3 lg:px-4 py-2 rounded-xl transition duration-200 text-sm lg:text-base">Logout</button>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 lg:px-4 py-2 rounded-xl transition duration-200 text-sm lg:text-base"
+                >
+                  Logout
+                </button>
               </>
             )}
           </div>
@@ -111,15 +124,13 @@ export function Home() {
               <button onClick={() => { setShowAuth(true); setAuthType("login"); setOpen(false); }} className="text-gray-700 border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200 text-center">Login / Sign Up</button>
             ) : (
               <div className="space-y-2 pt-2">
-                <p className="text-gray-700 px-4 py-2 text-center bg-gray-50 rounded-xl">
-                  <p className="text-gray-700 px-4 py-2 text-center bg-gray-50 rounded-xl flex items-center justify-center gap-2">
-                    <img
-                      src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full"
-                    />
-                    {auth}!
-                  </p>
+                <p className="text-gray-700 px-4 py-2 text-center bg-gray-50 rounded-xl flex items-center justify-center gap-2">
+                  <img
+                    src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full"
+                  />
+                  {auth}!
                 </p>
                 <button onClick={() => { handleLogout(); setOpen(false); }} className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition duration-200">Logout</button>
               </div>
@@ -140,47 +151,37 @@ export function Home() {
         </div>
       )}
 
-
+      {/* ===== Hero Section ===== */}
       <section className="text-center px-4 sm:px-6 py-16 sm:py-20 md:py-24 bg-gradient-to-br from-blue-100 via-white to-purple-50">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 sm:mb-6 leading-tight px-2">
           Build forms that <span className="text-blue-600">work for you</span>
         </h2>
         <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto mb-8 sm:mb-10 px-4">
-          Design professional forms tailored to your needs—simple, fast, and
-          fully customizable.
+          Design professional forms tailored to your needs—simple, fast, and fully customizable.
         </p>
-        <button
-          onClick={() => navigate("/editor")}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold transition duration-200 transform hover:scale-105 shadow-lg text-sm sm:text-base"
-        >
+        <button onClick={() => navigate("/editor")} className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold transition duration-200 transform hover:scale-105 shadow-lg text-sm sm:text-base">
           Create Your First Form
         </button>
       </section>
 
+      {/* ===== Features Section ===== */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20">
         <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-8 sm:mb-12 text-center px-2">
           Everything you need to build better forms
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 md:gap-8">
           {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition duration-300 transform hover:-translate-y-2 p-6 text-center border border-gray-100"
-            >
+            <div key={index} className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition duration-300 transform hover:-translate-y-2 p-6 text-center border border-gray-100">
               <div className="flex justify-center mb-4">{feature.icon}</div>
-              <h4 className="font-semibold text-base sm:text-lg mb-3 text-gray-800">
-                {feature.title}
-              </h4>
+              <h4 className="font-semibold text-base sm:text-lg mb-3 text-gray-800">{feature.title}</h4>
               <p className="text-sm text-gray-600 leading-relaxed">{feature.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section
-        id="templates"
-        className="relative max-w-6xl mx-auto px-6 sm:px-6 py-12 sm:py-16 md:py-20 bg-white rounded-3xl shadow-sm"
-       >
+      {/* ===== Templates Section ===== */}
+      <section id="templates" className="relative max-w-6xl mx-auto px-6 sm:px-6 py-12 sm:py-16 md:py-20 bg-white rounded-3xl shadow-sm">
         <h3 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8 text-center px-2">
           Ready-to-use Form Templates
         </h3>
@@ -196,7 +197,14 @@ export function Home() {
           {templates.map((template) => (
             <div
               key={template.id}
-              onClick={() => navigate(`/editor?template=${template.id}`)}
+              onClick={() => {
+                if (!auth) {
+                  setShowAuth(true);
+                  setAuthType("login");
+                  return;
+                }
+                navigate(`/editor?template=${template.id}`);
+              }}
               className="flex-shrink-0 w-56 sm:w-64 cursor-pointer bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition duration-300 transform hover:-translate-y-2 overflow-hidden group snap-start"
             >
               <div className="relative overflow-hidden">
@@ -204,10 +212,7 @@ export function Home() {
                   src={template.img}
                   alt={template.title}
                   className="w-full h-36 sm:h-40 object-cover group-hover:scale-110 transition duration-500"
-                  onError={(e) => {
-                    e.target.src =
-                      "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400";
-                  }}
+                  onError={(e) => { e.target.src ="https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400"; }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300"></div>
               </div>
@@ -221,20 +226,27 @@ export function Home() {
         </div>
       </section>
 
+      {/* ===== CTA Section ===== */}
       <section className="text-center px-4 sm:px-6 py-12 sm:py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 px-2">
-          Ready to get started?
-        </h3>
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 px-2">Ready to get started?</h3>
         <p className="text-blue-100 mb-6 sm:mb-8 max-w-xl mx-auto px-4 text-sm sm:text-base">
           Join thousands of users who trust FormBuilder for their form creation needs.
         </p>
         <button
-          onClick={() => navigate("/editor")}
+          onClick={() => {
+            if (!auth) {
+              setShowAuth(true);
+              setAuthType("login");
+              return;
+            }
+            navigate("/editor");
+          }}
           className="bg-white text-blue-600 px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold transition duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm sm:text-base"
         >
           Start Building Forms
         </button>
       </section>
+
     </div>
   );
 }

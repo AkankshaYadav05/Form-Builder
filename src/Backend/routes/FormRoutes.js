@@ -1,7 +1,6 @@
 import express from 'express';
 import Form from '../models/Form.js';
 import Response from "../models/Response.js";
-import { isAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -17,7 +16,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/forms - Create new form
-router.post('/', isAuth, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const formData = {
       ...req.body,
@@ -49,7 +48,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/forms/:id - Update form
-router.put('/:id', isAuth, async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const updateData = {
       ...req.body,
@@ -74,7 +73,7 @@ router.put('/:id', isAuth, async (req, res) => {
 });
 
 // DELETE /api/forms/:id - Delete form
-router.delete('/:id', isAuth, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const deleted = await Form.findByIdAndDelete(req.params.id);
     if (!deleted) {
@@ -150,7 +149,7 @@ router.post("/:id/submit", async (req, res) => {
 });
 
 // GET /api/forms/:id/responses - Get all responses for a form
-router.get('/:id/responses', isAuth, async (req, res) => {
+router.get('/:id/responses', async (req, res) => {
   try {
     const responses = await Response.find({ formId: req.params.id })
       .sort({ submittedAt: -1 });
