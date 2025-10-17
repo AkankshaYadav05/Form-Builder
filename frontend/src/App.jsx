@@ -6,6 +6,7 @@ import FillForm from './pages/FillForm';
 import FormResponses from './pages/FormResponses';
 import FormBuilder from './pages/FormBuilder';
 import { AuthProvider } from "./components/AuthContext";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/forms" element={<FormsList />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/editor" element={<FormBuilder />} />
         <Route path="/forms/:id" element={<EditForm />} />
         <Route path="/forms/:id/edit" element={<EditForm />} />

@@ -17,16 +17,20 @@ export function Home() {
   const [showAuth, setShowAuth] = useState(false);
   const [authType, setAuthType] = useState("login");
   const [open, setOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  
 
   const handleAuthSuccess = (username) => {
     setAuth(username);
     setShowAuth(false);
   };
 
-  const handleLogout = async () => {
+ const handleLogout = async () => {
     try {
       await axios.post("http://localhost:5000/api/users/logout");
       setAuth(null);
+      setDropdownOpen(false); // close dropdown after logout
     } catch (err) {
       console.error("Logout failed", err);
     }
@@ -93,22 +97,38 @@ export function Home() {
               </button>
             ) : (
               <>
-                <span className="text-gray-700 text-sm lg:text-base max-w-[100px] truncate">
-                  <p className="text-gray-700 px-4 py-2 text-center bg-gray-50 rounded-xl flex items-center justify-center gap-2">
-                    <img
-                      src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full"
-                    />
-                    {auth}!
-                  </p>
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 lg:px-4 py-2 rounded-xl transition duration-200 text-sm lg:text-base"
-                >
-                  Logout
-                </button>
+                
+                {/* Profile Button */}
+      <button
+        onClick={() => setDropdownOpen(!dropdownOpen)}
+        className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 lg:px-4 py-2 rounded-xl transition duration-200 text-sm lg:text-base max-w-[160px] overflow-hidden"
+      >
+        <img
+          src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
+          alt="Profile"
+          className="w-6 h-6 rounded-full flex-shrink-0"
+        />
+        <span className="truncate">{auth}</span>
+      </button>
+
+      {/* Dropdown Menu */}
+      {dropdownOpen && (
+        <div className="absolute right-10 mt-35 w-36 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+          <button
+            onClick={() => { navigate("/profile"); setDropdownOpen(false); }}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-200 rounded-t-xl"
+          >
+            Profile
+          </button>
+          
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-200 rounded-b-xl text-red-500"
+          >
+            Logout
+          </button>
+        </div>
+      )}
               </>
             )}
           </div>

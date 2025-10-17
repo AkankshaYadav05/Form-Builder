@@ -160,4 +160,19 @@ router.get('/:id/responses', async (req, res) => {
   }
 });
 
+router.get("/user", async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ msg: "Not logged in" });
+    }
+
+    // Fetch all forms where user field matches logged-in user's ObjectId
+    const forms = await Form.find({ user: req.session.userId });
+    res.json(forms);
+  } catch (err) {
+    console.error("Error fetching forms:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
 export default router;

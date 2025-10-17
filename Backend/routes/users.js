@@ -41,6 +41,43 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// ===== GET PROFILE =====
+router.get("/profile", async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ msg: "Not logged in" });
+    }
+
+    const user = await User.findById(req.session.userId).select("username email profileImage createdAt");
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+});
+
+// ===== UPDATE PROFILE =====
+router.put("/profile", async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ msg: "Not logged in" });
+    }
+
+    const { username, profileImage } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(
+      req.session.userId,
+      { username, profileImage },
+      { new: true }
+    ).select("username email profileImage");
+
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+});
+
+
 // ===== CHECK SESSION =====
 router.get("/me", async (req, res) => {
   if (req.session.userId) {
