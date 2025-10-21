@@ -20,9 +20,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "dev": "nodemon backend/server.js",
+    "dev": "nodemon Backend/server.js",
     "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
-    "start":  "node backend/server.js"
+    "start":  "node Backend/server.js"
   },
   "repository": {
     "type": "git",
