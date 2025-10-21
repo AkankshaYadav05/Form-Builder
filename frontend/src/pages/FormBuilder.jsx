@@ -27,6 +27,8 @@ export default function FormBuilder() {
   const [formTheme, setFormTheme] = useState('default');
   const [isEditing, setIsEditing] = useState(false);
   const [currentFormId, setCurrentFormId] = useState(null);
+  const [message, setMessage] = useState(null);
+
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -196,11 +198,13 @@ export default function FormBuilder() {
 
   const saveForm = async () => {
     if (!title.trim()) {
-      alert("Please enter a form title");
+      setMessage({ type: 'error', text: 'Please enter a form title.' });
+      setTimeout(() => setMessage(null), 3000);
       return;
     }
     if (questions.length === 0) {
-      alert("Add at least one question before saving");
+      setMessage({ type: 'error', text: 'Add at least one question before saving.' });
+      setTimeout(() => setMessage(null), 3000);
       return;
     }
 
@@ -216,16 +220,17 @@ export default function FormBuilder() {
 
       if (isEditing && currentFormId) {
         await axios.put(`http://localhost:5000/api/forms/${currentFormId}`, formData);
-        alert("Form updated successfully!");
+        setMessage({ type: 'success', text: 'Form updated successfully!' });
       } else {
         await axios.post("http://localhost:5000/api/forms", formData);
-        alert("Form saved successfully!");
+        setMessage({ type: 'success', text: 'Form saved successfully!' });
       }
 
       navigate("/forms");
     } catch (err) {
       console.error(err);
-      alert(isEditing ? "Error updating form" : "Error saving form");
+      setMessage({ type: 'error', text: 'Failed to save form. Please try again.' });
+      setTimeout(() => setMessage(null), 3000);    
     } finally {
       setLoading(false);
     }

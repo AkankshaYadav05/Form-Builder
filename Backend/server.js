@@ -5,12 +5,16 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import MongoStore from "connect-mongo";
 import multer from "multer";
+import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+
+dotenv.config();
 
 import userRoutes from "./routes/users.js";
 import formRoutes from "./routes/FormRoutes.js";
 import responseRoutes from "./routes/responses.js";
+
 
 // ===== Setup __dirname in ES modules =====
 const __filename = fileURLToPath(import.meta.url);
@@ -46,8 +50,6 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
   res.json({ filePath: `/uploads/${req.file.filename}` });
 });
 
-// ===== Serve Uploaded Files =====
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ===== Middleware =====
 app.use(express.json());
@@ -73,15 +75,24 @@ app.use("/api/users", userRoutes);
 app.use("/api/forms", formRoutes);
 app.use("/api/responses", responseRoutes);
 
+// ===== Serve Uploaded Files and frontend =====
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+app.get('*', (_,res) => {
+   res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
+
 // ===== Test Route =====
 app.get("/api/test", (req, res) => {
   res.json({ msg: "Backend is working!" });
 });
 
+const PORT = process.env.PORT || 5000;
+
 // ===== MongoDB Connection & Start Server =====
 mongoose.connect("mongodb://127.0.0.1:27017/formDB")
   .then(() => {
     console.log("MongoDB connected");
-    app.listen(5000, () => console.log("Server running on port 5000"));
+    app.listen(PORT, () => console.log("Server running on port 5000"));
   })
   .catch(err => console.error("MongoDB connection error:", err));

@@ -20,6 +20,7 @@ router.post('/', async (req, res) => {
   try {
     const formData = {
       ...req.body,
+      user: req.session.userId,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -30,6 +31,22 @@ router.post('/', async (req, res) => {
   } catch (err) {
     console.error('Error creating form:', err);
     res.status(500).json({ message: err.message });
+  }
+});
+
+// GET all forms for ogged in user
+router.get("/user", async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ msg: "Not logged in" });
+    }
+
+    // Fetch all forms where user field matches logged-in user's ObjectId
+    const forms = await Form.find({ user: req.session.userId });
+    res.json(forms);
+  } catch (err) {
+    console.error("Error fetching forms:", err);
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
@@ -125,7 +142,6 @@ router.post("/:id/submit", async (req, res) => {
     const response = new Response({
       formId: id,
       answers: processedAnswers,
-      score: 0, // Can be calculated based on correct answers later
       submittedAt: new Date(),
       submitterInfo: {
         ip: req.ip,
@@ -160,19 +176,6 @@ router.get('/:id/responses', async (req, res) => {
   }
 });
 
-router.get("/user", async (req, res) => {
-  try {
-    if (!req.session.userId) {
-      return res.status(401).json({ msg: "Not logged in" });
-    }
 
-    // Fetch all forms where user field matches logged-in user's ObjectId
-    const forms = await Form.find({ user: req.session.userId });
-    res.json(forms);
-  } catch (err) {
-    console.error("Error fetching forms:", err);
-    res.status(500).json({ msg: "Server error" });
-  }
-});
 
 export default router;

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { AuthContext } from "../components/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, FileText, BarChart2, Edit2, Upload } from "lucide-react";
+import { ArrowLeft, User, FileText, BarChart2, Edit2, Upload, Calendar, Edit3, Eye, Trash2, Share2 } from "lucide-react";
 
 export default function Profile() {
   const { auth, setAuth } = useContext(AuthContext);
@@ -13,36 +13,42 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [updatedName, setUpdatedName] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
+  const [forms, setForms] = useState([]);
 
-  useEffect(() => {
-    if (!auth) {
-      navigate("/");
-      return;
+useEffect(() => {
+  if (!auth) {
+    navigate("/");
+    return;
+  }
+
+  async function fetchProfile() {
+    try {
+      axios.defaults.baseURL = "http://localhost:5000";
+      axios.defaults.withCredentials = true; // include cookies if using jwt cookies
+
+      const [userRes, formsRes, respRes] = await Promise.all([
+        axios.get("/api/users/profile"),
+        axios.get("/api/forms/user", { withCredentials: true }),
+        axios.get("/api/responses/user", { withCredentials: true }),
+      ]);
+
+      setProfile(userRes.data);
+      setStats({
+        forms: formsRes.data.length,
+        responses: respRes.data.length,
+      });
+      setForms(formsRes.data); // new line
+      setUpdatedName(userRes.data.name);
+    } catch (err) {
+      console.error("Failed to load profile", err);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    async function fetchProfile() {
-      try {
-        axios.defaults.baseURL = "http://localhost:5000";
-        const [userRes, formsRes, respRes] = await Promise.all([
-          axios.get("/api/users/profile"),
-          axios.get("/api/forms/user"),
-          axios.get("/api/responses/user"),
-        ]);
-        setProfile(userRes.data);
-        setStats({
-          forms: formsRes.data.length,
-          responses: respRes.data.length,
-        });
-        setUpdatedName(userRes.data.name);
-      } catch (err) {
-        console.error("Failed to load profile", err);
-      } finally {
-        setLoading(false);
-      }
-    }
+  fetchProfile();
+}, [auth, navigate]);
 
-    fetchProfile();
-  }, [auth, navigate]);
 
   const handleUpdateName = async () => {
     if (!updatedName.trim()) return alert("Name cannot be empty");
@@ -183,6 +189,81 @@ export default function Profile() {
           <p className="text-gray-500 text-sm">Joined On</p>
         </div>
       </div>
+
+      {/* User Forms Section */}
+    <div className="max-w-6xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold mb-6 text-gray-800">My Forms</h1>
+
+      {forms.length === 0 ? (
+        <p className="text-gray-500 text-center">No forms created yet.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {forms.map((form) => (
+            <div
+              key={form._id}
+              className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 hover:shadow-lg transition-all duration-200"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-start">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {form.title || "Untitled Form"}
+                </h2>
+
+                <div className="flex gap-3">
+                  <FileText size={18} className="text-gray-600 cursor-pointer" />
+                  <Share2 size={18} className="text-green-600 cursor-pointer" />
+                  <Trash2 size={18} className="text-red-500 cursor-pointer" />
+                </div>
+              </div>
+
+              {/* Description */}
+              <p className="text-gray-500 text-sm mt-1 mb-3">
+                {form.description || "Form description"}
+              </p>
+
+              {/* Meta */}
+              <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                <Calendar size={15} />
+                <span>
+                  Created{" "}
+                  {new Date(form.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+
+              {/* Questions count */}
+              <p className="text-gray-700 text-sm mb-3">
+                {form.questions?.length || 0} question
+                {form.questions?.length > 1 ? "s" : ""}
+              </p>
+
+              {/* Example question type preview */}
+              {form.questions && form.questions.length > 0 && (
+                <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-full">
+                  ✅ {form.questions[0].type || "Question"}
+                </div>
+              )}
+
+              <hr className="my-4 border-gray-200" />
+
+              {/* Footer */}
+              <div className="flex justify-between items-center">
+                <button className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium">
+                  <Edit3 size={16} /> Edit
+                </button>
+                <button className="flex items-center gap-1 text-green-600 hover:text-green-700 font-medium">
+                  <Eye size={16} /> Responses
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
     </div>
   );
 }

@@ -30,6 +30,7 @@ const FormSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, default: "" },
   questions: [QuestionSchema],
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   theme: { type: String, default: "default" },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

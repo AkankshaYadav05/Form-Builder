@@ -85,7 +85,7 @@ export function Home() {
 
           <div className="hidden md:flex items-center gap-4 lg:gap-6">
             <button onClick={scrollToTemplates} className="text-gray-700 hover:text-blue-600 transition duration-200 text-sm lg:text-base">Templates</button>
-            <button onClick={() => handleProtectedNavigate("/forms")} className="text-gray-700 hover:text-blue-600 transition duration-200 text-sm lg:text-base">My Forms</button>
+            <button onClick={() => handleProtectedNavigate("/forms")} className="text-gray-700 hover:text-blue-600 transition duration-200 text-sm lg:text-base">All Forms</button>
             <button onClick={() => handleProtectedNavigate("/editor")} className="bg-blue-600 hover:bg-blue-700 text-white px-3 lg:px-4 py-2 rounded-xl font-medium shadow-sm transition duration-200 transform hover:scale-105 text-sm lg:text-base">Create Forms</button>
 
             {!auth ? (
@@ -137,7 +137,7 @@ export function Home() {
         {open && (
           <div className="mt-4 flex flex-col space-y-3 md:hidden bg-white border rounded-lg p-4 shadow-lg">
             <button onClick={scrollToTemplates} className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100">Templates</button>
-            <button onClick={() => { handleProtectedNavigate("/forms"); setOpen(false); }} className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100">My Forms</button>
+            <button onClick={() => { handleProtectedNavigate("/forms"); setOpen(false); }} className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100">All Forms</button>
             <button onClick={() => { handleProtectedNavigate("/editor"); setOpen(false); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium text-center shadow-sm transition duration-200">Create Forms</button>
 
             {!auth ? (
