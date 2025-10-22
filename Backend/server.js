@@ -58,11 +58,11 @@ app.use(cookieParser());
 
 // ===== Session =====
 app.use(session({
-  secret: "SECRET_KEY", // move to .env in production
+  secret: process.env.SESSION_SECRET || "SECRET_KEY", 
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: "mongodb://127.0.0.1:27017/formDB",
+    mongoUrl: process.env.MONGO_URI,
   }),
   cookie: {
     httpOnly: true,
