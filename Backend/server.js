@@ -24,7 +24,7 @@ const app = express();
 
 // ===== CORS =====
 app.use(cors({
-  origin: "http://localhost:5173", // frontend
+  origin: "https://form-builder-o2wt.onrender.com", // frontend
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],

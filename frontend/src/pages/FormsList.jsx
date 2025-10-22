@@ -31,7 +31,7 @@ function FormsList() {
   const loadForms = async () => {
     try {
       setLoading(true);
-      axios.defaults.baseURL = 'http://localhost:5000';
+      axios.defaults.baseURL = 'https://form-builder-o2wt.onrender.com';
       const response = await axios.get('/api/forms');
       setForms(Array.isArray(response.data) ? response.data : []);
     } catch (error) {

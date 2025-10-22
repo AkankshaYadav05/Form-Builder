@@ -9,7 +9,7 @@ export default function EditForm() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/forms/${id}`)
+    fetch(`https://form-builder-o2wt.onrender.com/api/forms/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch form");
         return res.json();
@@ -37,7 +37,7 @@ export default function EditForm() {
   initialData={formData}
   onSubmit={(updatedForm) => {
     console.log("Submitting updated form:", updatedForm);
-    fetch(`http://localhost:5000/api/forms/${id}`, {
+    fetch(`https://form-builder-o2wt.onrender.com/api/forms/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updatedForm),

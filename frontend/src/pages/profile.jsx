@@ -24,7 +24,7 @@ useEffect(() => {
 
   async function fetchProfile() {
     try {
-      axios.defaults.baseURL = "http://localhost:5000";
+      axios.defaults.baseURL = "https://form-builder-o2wt.onrender.com";
       axios.defaults.withCredentials = true; // include cookies if using jwt cookies
 
       const [userRes, formsRes, respRes] = await Promise.all([

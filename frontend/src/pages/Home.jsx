@@ -28,7 +28,7 @@ export function Home() {
 
  const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:5000/api/users/logout");
+      await axios.post("https://form-builder-o2wt.onrender.com/api/users/logout");
       setAuth(null);
       setDropdownOpen(false); // close dropdown after logout
     } catch (err) {

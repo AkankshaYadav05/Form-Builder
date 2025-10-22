@@ -15,7 +15,7 @@ export default function FillForm() {
   useEffect(() => {
     const loadForm = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/forms/${formId}`);
+        const response = await fetch(`https://form-builder-o2wt.onrender.com/api/forms/${formId}`);
         if (!response.ok) throw new Error('Form not found');
         const formData = await response.json();
         setForm(formData);
@@ -59,7 +59,7 @@ export default function FillForm() {
         answer: answers[q.id] || '',
       }));
 
-      const response = await fetch(`http://localhost:5000/api/responses/submit`, {
+      const response = await fetch(`https://form-builder-o2wt.onrender.com/api/responses/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ formId: form._id, answers: answersArray }),

@@ -21,7 +21,7 @@ export default function FormResponses() {
       if (!id) return;
       setLoading(true);
       try {
-        axios.defaults.baseURL = 'http://localhost:5000';
+        axios.defaults.baseURL = 'https://form-builder-o2wt.onrender.com';
         const formResponse = await axios.get(`/api/forms/${id}`);
         setForm(formResponse.data);
         const responsesResponse = await axios.get(`/api/responses?formId=${id}`);
@@ -82,7 +82,7 @@ export default function FormResponses() {
   if (!window.confirm("Are you sure you want to delete this response?")) return;
 
   try {
-    await axios.delete(`http://localhost:5000/api/responses/${responseId}`);
+    await axios.delete(`https://form-builder-o2wt.onrender.com/api/responses/${responseId}`);
     setResponses((prev) => prev.filter((r) => r._id !== responseId));
     alert("Response deleted successfully");
   } catch (error) {
