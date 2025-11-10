@@ -1,7 +1,5 @@
 import express from "express";
 import Response from "../models/Response.js";
-import Form from "../models/Form.js"; 
-import mongoose from "mongoose";
 
 const router = express.Router();
 
@@ -14,7 +12,6 @@ router.post('/submit', async (req, res) => {
       return res.status(400).json({ message: 'Invalid form submission' });
     }
 
-    // Validate each answer
     answers.forEach(a => {
       if (!a.questionId || !a.subQuestionId || !a.question) {
         throw new Error('Answer validation failed');
@@ -47,7 +44,6 @@ router.get("/user", async (req, res) => {
       return res.status(401).json({ msg: "Not logged in" });
     }
 
-    // Fetch all responses where user field matches logged-in user's ObjectId
     const responses = await Response.find({ user: req.session.userId });
     res.json(responses);
   } catch (err) {

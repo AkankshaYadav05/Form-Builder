@@ -9,7 +9,7 @@ export default function EditForm() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`https://form-builder-o2wt.onrender.com/api/forms/${id}`)
+    fetch(`http://localhost:5000/api/forms/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch form");
         return res.json();
@@ -34,27 +34,25 @@ export default function EditForm() {
       </h1>
 
       <FormBuilder
-  initialData={formData}
-  onSubmit={(updatedForm) => {
-    console.log("Submitting updated form:", updatedForm);
-    fetch(`https://form-builder-o2wt.onrender.com/api/forms/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedForm),
-    })
-      .then((res) => {
-        console.log("Response status:", res.status);
-        if (!res.ok) throw new Error("Failed to update form");
-        navigate("/allForms");
-      })
-      .catch((err) => {
-        console.error("Update error:", err);
-        alert("Failed to update the form. Please try again.");
-      });
-  }}
-/>
-
-      
+        initialData={formData}
+        onSubmit={(updatedForm) => {
+          console.log("Submitting updated form:", updatedForm);
+          fetch(`http://localhost:5000/api/forms/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedForm),
+          })
+          .then((res) => {
+            console.log("Response status:", res.status);
+            if (!res.ok) throw new Error("Failed to update form");
+            navigate("/allForms");
+          })
+          .catch((err) => {
+            console.error("Update error:", err);
+            alert("Failed to update the form. Please try again.");
+          });
+        }}
+      />
     </div>
   );
 }

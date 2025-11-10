@@ -1,6 +1,9 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import User from "../models/user.js";
+import Form from "../models/Form.js";
+import Response from "../models/Response.js";
+
 
 const router = express.Router();
 
@@ -16,7 +19,7 @@ router.post("/signup", async (req, res) => {
     const user = new User({ username, email, password: hashedPassword });
     await user.save();
 
-    req.session.userId = user._id; // auto-login
+    req.session.userId = user._id; 
     res.status(200).json({ msg: "Signup successful", username: user.username });
   } catch (err) {
     res.status(500).json({ msg: err.message });
@@ -48,11 +51,28 @@ router.get("/profile", async (req, res) => {
       return res.status(401).json({ msg: "Not logged in" });
     }
 
-    const user = await User.findById(req.session.userId).select("username email profileImage createdAt");
+    const user = await User.findById(req.session.userId)
+      .select("username email profileImage createdAt");
     if (!user) return res.status(404).json({ msg: "User not found" });
 
-    res.status(200).json(user);
+    const forms = await Form.find({ user: req.session.userId }).select("_id");
+
+    const totalResponses = await Response.countDocuments({
+      formId: { $in: forms.map(f => f._id) }
+    });
+
+    res.status(200).json({
+       _id: user._id, 
+      username: user.username,
+      email: user.email,
+      profileImage: user.profileImage,
+      createdAt: user.createdAt,
+      totalForms: forms.length,
+      totalResponses   
+    });
+
   } catch (err) {
+    console.error("Error fetching profile:", err);
     res.status(500).json({ msg: err.message });
   }
 });
@@ -64,10 +84,13 @@ router.put("/profile", async (req, res) => {
       return res.status(401).json({ msg: "Not logged in" });
     }
 
-    const { username, profileImage } = req.body;
+    const updateData = {};
+    if (req.body.username) updateData.username = req.body.username;
+    if (req.body.profileImage) updateData.profileImage = req.body.profileImage;
+
     const updatedUser = await User.findByIdAndUpdate(
       req.session.userId,
-      { username, profileImage },
+      updateData,
       { new: true }
     ).select("username email profileImage");
 
@@ -76,6 +99,7 @@ router.put("/profile", async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 });
+
 
 
 // ===== CHECK SESSION =====

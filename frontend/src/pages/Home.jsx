@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../components/AuthContext";
 import AuthForm from "../components/AuthForm";
@@ -18,6 +18,7 @@ export function Home() {
   const [authType, setAuthType] = useState("login");
   const [open, setOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
 
   
 
@@ -28,7 +29,7 @@ export function Home() {
 
  const handleLogout = async () => {
     try {
-      await axios.post("https://form-builder-o2wt.onrender.com/api/users/logout");
+      await axios.post("http://localhost:5000/api/users/logout");
       setAuth(null);
       setDropdownOpen(false); // close dropdown after logout
     } catch (err) {
@@ -44,6 +45,18 @@ export function Home() {
     }
     navigate(path);
   };
+
+  useEffect(() => {
+      const fetchProfile = async () => {
+        try {
+          const res = await axios.get("/api/users/profile");
+          setProfile(res.data);
+        } catch (err) {
+          console.error("Failed to load profile", err);
+        }
+      };
+      fetchProfile();
+  }, []);
 
   const scrollToTemplates = () => {
     const el = document.getElementById("templates");
@@ -95,40 +108,46 @@ export function Home() {
               >
                 Login / Sign Up
               </button>
-            ) : (
+             ) : (
               <>
                 
                 {/* Profile Button */}
-      <button
-        onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 lg:px-4 py-2 rounded-xl transition duration-200 text-sm lg:text-base max-w-[160px] overflow-hidden"
-      >
-        <img
-          src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
-          alt="Profile"
-          className="w-6 h-6 rounded-full flex-shrink-0"
-        />
-        <span className="truncate">{auth}</span>
-      </button>
+               <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 lg:px-4 py-2 rounded-xl transition duration-200 text-sm lg:text-base max-w-[160px] overflow-hidden"
+               >
+                <img
+                    src={
+                    profile?.profileImage
+                    ? profile.profileImage.startsWith("http")
+                    ? profile.profileImage
+                    : `http://localhost:5000${profile.profileImage}`
+                    : "https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
+                  }                  
+                  alt="Profile"
+                  className="w-6 h-6 rounded-full flex-shrink-0"
+                />
+                <span className="truncate">{auth}</span>
+               </button>
 
-      {/* Dropdown Menu */}
-      {dropdownOpen && (
-        <div className="absolute right-10 mt-35 w-36 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
-          <button
-            onClick={() => { navigate("/profile"); setDropdownOpen(false); }}
-            className="w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-200 rounded-t-xl"
-          >
-            Profile
-          </button>
+               {/* Dropdown Menu */}
+               {dropdownOpen && (
+                <div className="absolute right-10 mt-35 w-36 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
+                  <button
+                    onClick={() => { navigate("/profile"); setDropdownOpen(false); }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-200 rounded-t-xl"
+                  >
+                  Profile
+                  </button>
           
-          <button
-            onClick={handleLogout}
-            className="w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-200 rounded-b-xl text-red-500"
-          >
-            Logout
-          </button>
-        </div>
-      )}
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-100 transition duration-200 rounded-b-xl text-red-500"
+                  >
+                  Logout
+                  </button>
+                </div>
+               )}
               </>
             )}
           </div>
@@ -136,23 +155,76 @@ export function Home() {
 
         {open && (
           <div className="mt-4 flex flex-col space-y-3 md:hidden bg-white border rounded-lg p-4 shadow-lg">
-            <button onClick={scrollToTemplates} className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100">Templates</button>
-            <button onClick={() => { handleProtectedNavigate("/forms"); setOpen(false); }} className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100">All Forms</button>
-            <button onClick={() => { handleProtectedNavigate("/editor"); setOpen(false); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium text-center shadow-sm transition duration-200">Create Forms</button>
+            <button
+              onClick={scrollToTemplates}
+              className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100"
+            >
+            Templates
+            </button>
+
+            <button
+              onClick={() => {
+                handleProtectedNavigate("/forms");
+                setOpen(false);
+              }}
+              className="text-gray-700 hover:text-blue-600 text-left py-2 transition duration-200 border-b border-gray-100"
+            >
+            All Forms
+            </button>
+
+            <button
+              onClick={() => {
+                handleProtectedNavigate("/editor");
+                setOpen(false);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium text-center shadow-sm transition duration-200"
+            >
+            Create Forms
+            </button>
 
             {!auth ? (
-              <button onClick={() => { setShowAuth(true); setAuthType("login"); setOpen(false); }} className="text-gray-700 border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200 text-center">Login / Sign Up</button>
-            ) : (
-              <div className="space-y-2 pt-2">
-                <p className="text-gray-700 px-4 py-2 text-center bg-gray-50 rounded-xl flex items-center justify-center gap-2">
+              <button
+                onClick={() => {
+                  setShowAuth(true);
+                  setAuthType("login");
+                  setOpen(false);
+                }}
+                className="text-gray-700 border border-gray-300 px-4 py-2 rounded-xl hover:bg-gray-100 transition duration-200 text-center"
+              >
+              Login / Sign Up
+              </button>
+             ) : (
+                <div className="space-y-2 pt-2">
+                <button
+                  onClick={() => {
+                    navigate("/profile");
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-3 bg-gray-50 p-2 rounded-xl w-full text-left hover:bg-gray-100 transition duration-200"
+                >
                   <img
-                    src="https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
+                  src={
+                    profile?.profileImage
+                    ? profile.profileImage.startsWith("http")
+                    ? profile.profileImage
+                    : `http://localhost:5000${profile.profileImage}`
+                    : "https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
+                  }
                     alt="Profile"
                     className="w-8 h-8 rounded-full"
                   />
-                  {auth}!
-                </p>
-                <button onClick={() => { handleLogout(); setOpen(false); }} className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition duration-200">Logout</button>
+                  <span className="text-gray-700">{auth}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setOpen(false);
+                  }}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition duration-200"
+                >
+                Logout
+                </button>
               </div>
             )}
           </div>
@@ -179,8 +251,18 @@ export function Home() {
         <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto mb-8 sm:mb-10 px-4">
           Design professional forms tailored to your needs—simple, fast, and fully customizable.
         </p>
-        <button onClick={() => navigate("/editor")} className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold transition duration-200 transform hover:scale-105 shadow-lg text-sm sm:text-base">
-          Create Your First Form
+        <button 
+          onClick={() => {
+            if (!auth) {
+              setShowAuth(true);
+              setAuthType("login");
+              return;
+            }
+            navigate("/editor");
+          }}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold transition duration-200 transform hover:scale-105 shadow-lg text-sm sm:text-base"
+        >
+        Create Your First Form
         </button>
       </section>
 

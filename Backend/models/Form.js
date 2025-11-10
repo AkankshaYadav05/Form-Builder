@@ -9,23 +9,16 @@ const QuestionSchema = new mongoose.Schema({
   },
   text: { type: String, required: true },
   
-  // For MCQ, Checkbox, Dropdown
   options: [{ type: String }],
-  
-  // For Rating
-  scale: { type: Number, default: 5 },
-  
-  // For Categorize
+  scale: { type: Number, default: 5 },  
   categories: [{ type: String }],
   items: [{ type: String }],
-  
-  // Optional fields
   required: { type: Boolean, default: false },
   placeholder: String,
   description: String
 });
 
-// Form schema
+
 const FormSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, default: "" },
@@ -33,10 +26,10 @@ const FormSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   theme: { type: String, default: "default" },
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
 });
 
-// Update the updatedAt field before saving
+
 FormSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();

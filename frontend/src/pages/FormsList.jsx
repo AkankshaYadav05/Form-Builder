@@ -4,7 +4,7 @@ import axios from 'axios';
 import {
   ArrowLeft,
   Plus,
-  CreditCard as Edit3,
+  Edit3,
   Trash2,
   Eye,
   Calendar,
@@ -15,7 +15,7 @@ import StatsCard from '../components/StatsCard';
 import ShareModal from '../components/ShareModal';
 import DeleteModal from '../components/DeleteModal';
 
-function FormsList() {
+function FormsList({user, form}) {
   const navigate = useNavigate();
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,17 +23,31 @@ function FormsList() {
   const [shareModal, setShareModal] = useState({ isOpen: false, formId: null, formTitle: '' });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, form: null });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [profile, setProfile] = useState(null);
+
 
   useEffect(() => {
     loadForms();
   }, []);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get("/api/users/profile");
+        setProfile(res.data);
+      } catch (err) {
+        console.error("Failed to load profile", err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const loadForms = async () => {
     try {
       setLoading(true);
-      axios.defaults.baseURL = 'https://form-builder-o2wt.onrender.com';
+      axios.defaults.baseURL = 'http://localhost:5000';
       const response = await axios.get('/api/forms');
-      setForms(Array.isArray(response.data) ? response.data : []);
+      setForms(Array.isArray(response.data) ? response.data : []);   
     } catch (error) {
       console.error('Error loading forms:', error);
       setMessage({ type: 'error', text: 'Failed to load forms. Please try again.' });
@@ -42,6 +56,7 @@ function FormsList() {
       setLoading(false);
     }
   };
+
 
   const deleteForm = async (formId) => {
     setIsDeleting(true);
@@ -107,6 +122,20 @@ function FormsList() {
             >
               + New
             </button>
+
+            <button onClick={() => navigate('/profile')} >
+              <img
+                  src={
+                    profile?.profileImage
+                    ? profile.profileImage.startsWith("http")
+                    ? profile.profileImage
+                    : `http://localhost:5000${profile.profileImage}`
+                    : "https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
+                  }               
+                  alt="Profile"
+                className="w-8 h-8 rounded-full ml-2"
+              />
+            </button>
           </div>
 
           {/* Desktop */}
@@ -123,12 +152,31 @@ function FormsList() {
                 <p className="text-gray-600 mt-1">Manage and organize your forms</p>
               </div>
             </div>
-            <button
-              onClick={() => navigate('/editor')}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm font-medium"
-            >
-              <Plus size={18} /> Create New Form
-            </button>
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => navigate('/editor')}
+                className="flex items-center gap-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow-sm font-medium"
+              >
+                <Plus size={18} /> Create New Form
+              </button>
+          
+              <button
+                onClick={() => navigate("/profile")}
+                className="flex items-center justify-center focus:outline-none"
+              >
+                <img
+                  src={
+                    profile?.profileImage
+                    ? profile.profileImage.startsWith("http")
+                    ? profile.profileImage
+                    : `http://localhost:5000${profile.profileImage}`
+                    : "https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
+                  }
+                  alt="Profile"
+                  className="w-11 h-11 rounded-full ml-2"
+                />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -208,100 +256,142 @@ function FormsList() {
 
             {/* Forms Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {forms.map((form) => (
+              {forms.map((form) => {
+                const isOwner = String(form?.user) === String(profile?._id);
+
+              return (
                 <div
                   key={form._id || form.id}
                   className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 overflow-hidden"
                 >
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-800 truncate flex-1 mr-2">
-                        {form.title || 'Untitled Form'}
-                      </h3>
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => navigate(`/editor?edit=${form._id}`)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200"
-                          title="Edit form"
-                        >
-                          <Edit3 size={16} />
-                        </button>
-                        <button
-                          onClick={() =>
-                            setShareModal({ isOpen: true, formId: form._id, formTitle: form.title })
+
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800 truncate flex-1 mr-2">
+                      {form.title || 'Untitled Form'}
+                    </h3>
+
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => {
+                          if (isOwner) {
+                            navigate(`/editor?edit=${form._id}`);
+                          } else {
+                          alert("You can't edit this form as you are not the creator");
                           }
-                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200"
-                          title="Share form"
-                        >
-                          <Share2 size={16} />
-                        </button>
-                        <button
-                          onClick={() =>
-                            setDeleteModal({ isOpen: true, form })
+                        }}
+                          className={`p-2 rounded-lg transition duration-200 ${
+                          isOwner
+                          ? "text-blue-600 hover:bg-blue-50"
+                          : "text-blue-400 cursor-not-allowed"
+                        }`}
+                        title="Edit form"
+                      >
+                        <Edit3 size={16} />
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          setShareModal({
+                            isOpen: true,
+                            formId: form._id,
+                            formTitle: form.title,
+                          })
+                        }
+                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200"
+                        title="Share form"
+                      >
+                        <Share2 size={16} />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          if (isOwner) {
+                            setDeleteModal({ isOpen: true, form });
+                          } else {
+                            alert("You can't delete this form as you are not the creator");
                           }
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition duration-200"
+                        }}
+                          className={`p-2 rounded-lg transition duration-200 ${
+                            isOwner? "text-red-600 hover:bg-red-50": "text-red-400 cursor-not-allowed"
+                          }`}
                           title="Delete form"
                         >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {form.description || 'No description provided'}
-                    </p>
-
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                      <Calendar size={14} />
-                      <span>Created {formatDate(form.createdAt)}</span>
-                    </div>
-
-                    <div className="mb-4">
-                      <div className="text-sm text-gray-500 mb-2">
-                        {form.questions?.length || 0} question{(form.questions?.length || 0) !== 1 ? 's' : ''}
-                      </div>
-                      {form.questions && form.questions.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {form.questions.slice(0, 5).map((question, index) => (
-                            <span
-                              key={index}
-                              className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
-                              title={question.text}
-                            >
-                              <span>{getQuestionTypeIcon(question.type)}</span>
-                              <span className="capitalize">{question.type}</span>
-                            </span>
-                          ))}
-                          {form.questions.length > 5 && (
-                            <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
-                              +{form.questions.length - 5} more
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                      <button
-                        onClick={() => navigate(`/editor?edit=${form._id}`)}
-                        className="flex items-center gap-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition duration-200 text-sm font-medium"
-                      >
-                        <Edit3 size={14} />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => navigate(`/forms/${form._id}/responses`)}
-                        className="flex items-center gap-1 px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200 text-sm font-medium"
-                        title="View responses"
-                      >
-                        <Eye size={14} />
-                        Responses
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>
+
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {form.description || 'No description provided'}
+                  </p>
+
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                    <Calendar size={14} />
+                      <span>Created {formatDate(form.createdAt)}</span>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="text-sm text-gray-500 mb-2">
+                      {form.questions?.length || 0} question
+                      {(form.questions?.length || 0) !== 1 ? 's' : ''}
+                    </div>
+
+                    {form.questions && form.questions.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {form.questions.slice(0, 5).map((question, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+                          title={question.text}
+                        >
+                          <span>{getQuestionTypeIcon(question.type)}</span>
+                          <span className="capitalize">{question.type}</span>
+                        </span>
+                    ))}
+
+                      {form.questions.length > 5 && (
+                        <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
+                          +{form.questions.length - 5} more
+                        </span>
+                      )}
+                  </div>
+                  )}
                 </div>
-              ))}
+
+                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                  <button
+                    onClick={() => {
+                      if (isOwner) {
+                        navigate(`/editor?edit=${form._id}`);
+                      } else {
+                        alert("You can't edit this form as you are not the creator");
+                      }
+                    }}
+                    className={`flex items-center gap-1 px-3 py-2 rounded-lg transition duration-200 text-sm font-medium ${
+                      isOwner? "text-blue-600 hover:bg-blue-50": "text-blue-400 hover:bg-blue-50 cursor-not-allowed"
+                    }`}
+                    title="Edit form"
+                  >
+                    <Edit3 size={14} />
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => navigate(`/forms/${form._id}/responses`)}
+                    className="flex items-center gap-1 px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition duration-200 text-sm font-medium"
+                    title="View responses"
+                  >
+                    <Eye size={14} />
+                    Responses
+                  </button>
+                </div>
+              </div>
             </div>
+           );
+          })}
+        </div>
+
           </>
         )}
       </div>

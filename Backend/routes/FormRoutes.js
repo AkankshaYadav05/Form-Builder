@@ -1,6 +1,7 @@
 import express from 'express';
 import Form from '../models/Form.js';
 import Response from "../models/Response.js";
+import { requireLogin } from '../middleware.js';
 
 const router = express.Router();
 
@@ -16,15 +17,15 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/forms - Create new form
-router.post('/', async (req, res) => {
+router.post('/', requireLogin, async (req, res) => {
   try {
     const formData = {
       ...req.body,
-      user: req.session.userId,
+      user: req.session.userId, // creator ID
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     const form = new Form(formData);
     await form.save();
     res.status(201).json(form);
@@ -34,7 +35,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET all forms for ogged in user
+// GET all forms for logged in user
 router.get("/user", async (req, res) => {
   try {
     if (!req.session.userId) {
@@ -65,24 +66,20 @@ router.get('/:id', async (req, res) => {
 });
 
 // PUT /api/forms/:id - Update form
-router.put('/:id', async (req, res) => {
+router.put('/:id', requireLogin, async (req, res) => {
   try {
-    const updateData = {
-      ...req.body,
-      updatedAt: new Date()
-    };
-    
-    const updatedForm = await Form.findByIdAndUpdate(
-      req.params.id, 
-      updateData, 
-      { new: true, runValidators: true }
-    );
-    
-    if (!updatedForm) {
-      return res.status(404).json({ message: 'Form not found' });
+    const form = await Form.findById(req.params.id);
+    if (!form) return res.status(404).json({ message: 'Form not found' });
+
+    // check ownership
+    if (form.user.toString() !== req.session.userId) {
+      return res.status(403).json({ message: 'Not authorized to edit this form' });
     }
-    
-    res.json(updatedForm);
+
+    form.set({ ...req.body, updatedAt: new Date() });
+    await form.save();
+
+    res.json(form);
   } catch (err) {
     console.error('Error updating form:', err);
     res.status(500).json({ message: err.message });
@@ -90,35 +87,39 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/forms/:id - Delete form
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireLogin, async (req, res) => {
+  router.delete('/:id', requireLogin, async (req, res) => {
   try {
-    const deleted = await Form.findByIdAndDelete(req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ message: 'Form not found' });
+    const form = await Form.findById(req.params.id);
+    if (!form) return res.status(404).json({ message: 'Form not found' });
+
+    // check ownership
+    if (form.user.toString() !== req.session.userId) {
+      return res.status(403).json({ message: 'Not authorized to delete this form' });
     }
-    
-    // Also delete all responses for this form
+
+    await form.deleteOne();
     await Response.deleteMany({ formId: req.params.id });
-    
-    res.status(200).json({ message: 'Form and associated responses deleted successfully' });
+
+    res.json({ message: 'Form and responses deleted successfully' });
   } catch (err) {
     console.error('Error deleting form:', err);
     res.status(500).json({ message: err.message });
   }
+});
 });
 
 // POST /api/forms/:id/submit - Submit form response
 router.post("/:id/submit", async (req, res) => {
   try {
     const { id } = req.params;
-    const { answers } = req.body; // Array of { questionId, answer }
+    const { answers } = req.body; 
 
     const form = await Form.findById(id);
     if (!form) {
       return res.status(404).json({ error: "Form not found" });
     }
 
-    // Process answers and calculate score if needed
     const processedAnswers = answers.map(userAnswer => {
       const question = form.questions.find(q => q.id === userAnswer.questionId);
       
@@ -151,6 +152,8 @@ router.post("/:id/submit", async (req, res) => {
     });
 
     await response.save();
+    await Form.findByIdAndUpdate(id, { $inc: { responsesCount: 1 } });
+    
     res.status(201).json({ 
       message: 'Response submitted successfully',
       response: {

@@ -116,7 +116,7 @@ export default function ResponseDetailModal({ response, form, isOpen, onClose, r
                             answer.map((file, i) => (
                               <a
                                 key={i}
-                                href={`https://form-builder-o2wt.onrender.com${file}`}
+                                href={`http://localhost:5000${file}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:underline"
@@ -126,7 +126,7 @@ export default function ResponseDetailModal({ response, form, isOpen, onClose, r
                             ))
                           ) : (
                             <a
-                              href={`https://form-builder-o2wt.onrender.com${answer}`}
+                              href={`http://localhost:5000${answer}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 hover:underline"

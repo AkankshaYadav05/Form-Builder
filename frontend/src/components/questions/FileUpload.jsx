@@ -27,7 +27,7 @@ function FileUpload({ question, onChange }) {
         const formData = new FormData();
         formData.append('file', file);
 
-        const res = await axios.post('https://form-builder-o2wt.onrender.com/api/upload', formData, {
+        const res = await axios.post('http://localhost:5000/api/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
 

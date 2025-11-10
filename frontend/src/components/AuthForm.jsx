@@ -23,7 +23,7 @@ export default function AuthForm({ type, onSuccess, onTypeChange }) {
     try {
       const endpoint = type === "login" ? "login" : "signup";
       const { data } = await axios.post(
-        `https://form-builder-o2wt.onrender.com/api/users/${endpoint}`,
+        `http://localhost:5000/api/users/${endpoint}`,
         formData,
         { withCredentials: true }
       );

@@ -21,7 +21,7 @@ export default function FormResponses() {
       if (!id) return;
       setLoading(true);
       try {
-        axios.defaults.baseURL = 'https://form-builder-o2wt.onrender.com';
+        axios.defaults.baseURL = 'http://localhost:5000';
         const formResponse = await axios.get(`/api/forms/${id}`);
         setForm(formResponse.data);
         const responsesResponse = await axios.get(`/api/responses?formId=${id}`);
@@ -82,7 +82,7 @@ export default function FormResponses() {
   if (!window.confirm("Are you sure you want to delete this response?")) return;
 
   try {
-    await axios.delete(`https://form-builder-o2wt.onrender.com/api/responses/${responseId}`);
+    await axios.delete(`http://localhost:5000/api/responses/${responseId}`);
     setResponses((prev) => prev.filter((r) => r._id !== responseId));
     alert("Response deleted successfully");
   } catch (error) {
@@ -101,7 +101,7 @@ export default function FormResponses() {
     <div className="flex items-center justify-between sm:hidden">
       {/* Back button */}
       <button
-        onClick={() => navigate("/forms")}
+        onClick={() => navigate(-1)}
         className="p-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition"
       >
         <ArrowLeft size={18} />
@@ -126,11 +126,11 @@ export default function FormResponses() {
     {/* Desktop Header */}
     <div className="hidden sm:flex items-center gap-4">
       <button
-        onClick={() => navigate("/forms")}
+        onClick={() => navigate(-1)}
         className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
       >
         <ArrowLeft size={16} />
-        Back to Forms
+        Back
       </button>
       <div>
         <h1 className="text-3xl font-bold text-gray-800">

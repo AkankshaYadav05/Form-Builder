@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { QuestionRenderer } from '../components/QuestionRenderer';
 import { LoadingScreen, SuccessScreen, FormHeader, SubmitButton } from '../components/FormScreens';
+
+axios.defaults.withCredentials = true;
 
 export default function FillForm() {
   const { formId } = useParams();
@@ -15,10 +18,8 @@ export default function FillForm() {
   useEffect(() => {
     const loadForm = async () => {
       try {
-        const response = await fetch(`https://form-builder-o2wt.onrender.com/api/forms/${formId}`);
-        if (!response.ok) throw new Error('Form not found');
-        const formData = await response.json();
-        setForm(formData);
+        const { data } = await axios.get(`http://localhost:5000/api/forms/${formId}`);
+        setForm(data);
       } catch (error) {
         console.error('Error loading form:', error);
         setForm(null);
@@ -48,7 +49,6 @@ export default function FillForm() {
 
   const handleSubmit = async () => {
     if (!validateAll()) return;
-
     setIsSubmitting(true);
 
     try {
@@ -59,35 +59,22 @@ export default function FillForm() {
         answer: answers[q.id] || '',
       }));
 
-      const response = await fetch(`https://form-builder-o2wt.onrender.com/api/responses/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formId: form._id, answers: answersArray }),
+      await axios.post(`http://localhost:5000/api/responses/submit`, {
+        formId: form._id,
+        answers: answersArray,
       });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        alert(data.message || 'Failed to submit form.');
-        setIsSubmitting(false);
-        return;
-      }
 
       setIsSubmitting(false);
       setShowSuccess(true);
     } catch (error) {
       console.error('Error submitting form:', error);
       setIsSubmitting(false);
-      alert('Failed to submit form. Check console for details.');
+      alert(error.response?.data?.message || 'Failed to submit form.');
     }
   };
 
-  if (!form) {
-    return <LoadingScreen />;
-  }
-
-  if (showSuccess) {
-    return <SuccessScreen />;
-  }
+  if (!form) return <LoadingScreen />;
+  if (showSuccess) return <SuccessScreen />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-6 sm:py-8 px-4">
