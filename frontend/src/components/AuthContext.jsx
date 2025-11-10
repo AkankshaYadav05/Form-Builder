@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   // Check server session on app load
   const checkAuth = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/users/me");
+      const res = await axios.get("https://form-builder-production-cee9.up.railway.app/api/users/me");
       if (res.data.loggedIn) setAuth(res.data.username);
       else setAuth(null);
     } catch {

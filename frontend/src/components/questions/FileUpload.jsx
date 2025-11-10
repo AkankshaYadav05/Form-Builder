@@ -27,7 +27,7 @@ function FileUpload({ question, onChange }) {
         const formData = new FormData();
         formData.append('file', file);
 
-        const res = await axios.post('http://localhost:5000/api/upload', formData, {
+        const res = await axios.post('https://form-builder-production-cee9.up.railway.app/api/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
 
@@ -81,7 +81,7 @@ function FileUpload({ question, onChange }) {
         <ul className="mt-3 sm:mt-4 list-disc list-inside text-sm sm:text-base text-gray-700">
           {question.files.map((file, idx) => (
             <li key={idx}>
-              <a href={`http://localhost:5000${file}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+              <a href={`https://form-builder-production-cee9.up.railway.app${file}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                 {file.split('/').pop()}
               </a>
             </li>

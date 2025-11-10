@@ -18,7 +18,7 @@ export default function FillForm() {
   useEffect(() => {
     const loadForm = async () => {
       try {
-        const { data } = await axios.get(`http://localhost:5000/api/forms/${formId}`);
+        const { data } = await axios.get(`https://form-builder-production-cee9.up.railway.app/api/forms/${formId}`);
         setForm(data);
       } catch (error) {
         console.error('Error loading form:', error);
@@ -59,7 +59,7 @@ export default function FillForm() {
         answer: answers[q.id] || '',
       }));
 
-      await axios.post(`http://localhost:5000/api/responses/submit`, {
+      await axios.post(`https://form-builder-production-cee9.up.railway.app/api/responses/submit`, {
         formId: form._id,
         answers: answersArray,
       });

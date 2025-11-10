@@ -273,7 +273,7 @@ function FileUpload({ question, answer, onChange }) {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await axios.post('http://localhost:5000/api/upload', formData, {
+      const res = await axios.post('https://form-builder-production-cee9.up.railway.app/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -309,7 +309,7 @@ function FileUpload({ question, answer, onChange }) {
         />
         {answer && (
           <p className="mt-2 text-xs sm:text-sm text-green-600 break-all px-2">
-            <a href={`http://localhost:5000${answer}`} target="_blank" rel="noopener noreferrer">
+            <a href={`https://form-builder-production-cee9.up.railway.app/${answer}`} target="_blank" rel="noopener noreferrer">
               {answer.split('/').pop()}
             </a>
           </p>

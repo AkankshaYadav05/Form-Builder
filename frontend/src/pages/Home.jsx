@@ -29,7 +29,7 @@ export function Home() {
 
  const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:5000/api/users/logout");
+      await axios.post("https://form-builder-production-cee9.up.railway.app/api/users/logout");
       setAuth(null);
       setDropdownOpen(false); // close dropdown after logout
     } catch (err) {
@@ -121,7 +121,7 @@ export function Home() {
                     profile?.profileImage
                     ? profile.profileImage.startsWith("http")
                     ? profile.profileImage
-                    : `http://localhost:5000${profile.profileImage}`
+                    : `https://form-builder-production-cee9.up.railway.app${profile.profileImage}`
                     : "https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
                   }                  
                   alt="Profile"
@@ -207,7 +207,7 @@ export function Home() {
                     profile?.profileImage
                     ? profile.profileImage.startsWith("http")
                     ? profile.profileImage
-                    : `http://localhost:5000${profile.profileImage}`
+                    : `https://form-builder-production-cee9.up.railway.app${profile.profileImage}`
                     : "https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
                   }
                     alt="Profile"

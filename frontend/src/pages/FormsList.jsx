@@ -45,7 +45,7 @@ function FormsList({user, form}) {
   const loadForms = async () => {
     try {
       setLoading(true);
-      axios.defaults.baseURL = 'http://localhost:5000';
+      axios.defaults.baseURL = 'https://form-builder-production-cee9.up.railway.app';
       const response = await axios.get('/api/forms');
       setForms(Array.isArray(response.data) ? response.data : []);   
     } catch (error) {
@@ -129,7 +129,7 @@ function FormsList({user, form}) {
                     profile?.profileImage
                     ? profile.profileImage.startsWith("http")
                     ? profile.profileImage
-                    : `http://localhost:5000${profile.profileImage}`
+                    : `https://form-builder-production-cee9.up.railway.app${profile.profileImage}`
                     : "https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
                   }               
                   alt="Profile"
@@ -169,7 +169,7 @@ function FormsList({user, form}) {
                     profile?.profileImage
                     ? profile.profileImage.startsWith("http")
                     ? profile.profileImage
-                    : `http://localhost:5000${profile.profileImage}`
+                    : `https://form-builder-production-cee9.up.railway.app${profile.profileImage}`
                     : "https://t3.ftcdn.net/jpg/06/19/26/46/360_F_619264680_x2PBdGLF54sFe7kTBtAvZnPyXgvaRw0Y.jpg"
                   }
                   alt="Profile"
