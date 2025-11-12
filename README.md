@@ -1,8 +1,7 @@
 # 🧩 FormBuilder — Dynamic Form Creation & Response Management (MERN Stack)
 
 [![MERN Stack](https://img.shields.io/badge/Stack-MERN-green)]()
-[![Render Deployment](https://img.shields.io/badge/Deployed%20On-Render-blue)]()
-[![License](https://img.shields.io/badge/License-MIT-yellow)]()
+[![Railway Deployment](https://img.shields.io/badge/Deployed%20On-Railway-blue)]()
 
 FormBuilder is a full-stack web application built with the **MERN stack (MongoDB, Express, React, Node.js)** that allows users to easily **create, customize, and manage interactive forms**, similar to Google Forms. Users can build forms with multiple question types, upload images, and view collected responses in real time.
 
