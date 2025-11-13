@@ -1,14 +1,14 @@
 # 🧩 FormBuilder — Dynamic Form Creation & Response Management (MERN Stack)
 
 [![MERN Stack](https://img.shields.io/badge/Stack-MERN-green)]()
-[![Railway Deployment](https://img.shields.io/badge/Deployed%20On-Railway-blue)]()
+[![Railway Deployment](https://img.shields.io/badge/Deployed%20On-Vercel+Render-blue)]()
 
 FormBuilder is a full-stack web application built with the **MERN stack (MongoDB, Express, React, Node.js)** that allows users to easily **create, customize, and manage interactive forms**, similar to Google Forms. Users can build forms with multiple question types, upload images, and view collected responses in real time.
 
 ---
 
 ## 🚀 Live Demo
-👉 **[https://form-builder-production-cee9.up.railway.app/](https://form-builder-production-cee9.up.railway.app/)**  
+👉 **[https://form-builder-frontend-cyan-omega.vercel.app/](https://form-builder-frontend-cyan-omega.vercel.app/)**  
 
 ---
 
@@ -20,8 +20,7 @@ FormBuilder is a full-stack web application built with the **MERN stack (MongoDB
 - 👤 **User Authentication** – Session-based authentication with `express-session` + `connect-mongo`  
 - 📊 **Form Management** – Create, edit, and view responses for each form  
 - 🎨 **Modern UI** – Built with **React** and **Tailwind CSS** for a clean, responsive interface  
-- ☁️ **Fully Deployed on Render** – Backend and frontend integrated on a single live domain  
-
+- ☁️ **Frontend deployed on Vercel and backend on Render** – Fully integrated live application.
 ---
 
 ## 🛠️ Tech Stack
@@ -32,7 +31,7 @@ FormBuilder is a full-stack web application built with the **MERN stack (MongoDB
 | Backend | Node.js, Express.js |
 | Database | MongoDB Atlas |
 | Authentication | express-session, connect-mongo |
-| Deployment | Railway |
+| Deployment | Vercel + Render |
 
 ---
 
@@ -98,6 +97,7 @@ Push and open a Pull Request
 ## Author
 
 Akanksha
+
 MERN Stack Developer
 
 📧 Email: rd.akanksha05@gmail.com
